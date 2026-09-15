@@ -101,6 +101,18 @@ Nothing has been run in the game yet, so please try these and report anything od
 17. [ ] When your pet drops from Happy to Content, the happiness face appears with a chat message and sound. Clicking it starts Feed Pet, and the icon hides while the pet eats and once it's Happy again.
 18. [ ] `/petlog move` lets you drag both icons, and they stay where you put them after `/reload`.
 
+## Changelog
+
+### 1.1.0
+
+- Added the range icon: In range, Dead zone, Melee or Out of range while you target something you can attack.
+- Added the pet feed reminder: a happiness face with a chat message and sound when your pet stops being happy. Click it to cast Feed Pet.
+- Added Range icon and Feed reminder checkboxes to the log window, plus the `/petlog range`, `/petlog feed` and `/petlog move` commands.
+
+### 1.0.0
+
+- First version: the pet collection log (Type → Family → Skin, highest level per skin, uncaught skins hidden, 3D view of your current pet, assigning skins by hand).
+
 ## For developers
 
 - `HunterPetLog/Data/Skins.lua` is generated. To rebuild it, run `node tools/build-skins.js`. Downloaded pages are cached in `tools/cache/`; delete that folder to download fresh copies.
