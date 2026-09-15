@@ -19,6 +19,17 @@ It also adds two hunter helpers:
   - grey **Out of range**
 - **Feed reminder.** A happiness face pops up when your pet drops to Content (or only at Unhappy, if you prefer), with a chat message and a sound. Click it to cast Feed Pet, then click a food in your bags.
 
+## Quick start
+
+1. **Download** the zip from the [latest release](https://github.com/notforever-ship-it/PokeHuntLog/releases/latest). Copy both folders inside it into `Interface\AddOns\` in your game folder, then fully restart the game. [Full install steps](#install).
+2. **Put Auto Shot and Wing Clip on your action bars.** Any slot works, even a bar page you never show. Drag the real spells from your spellbook; macros don't count. Without them the range icon can't tell where you are. (You learn Wing Clip at level 12.)
+3. **Log in on your hunter.** The *How to use* window pops up the first time. Reopen it any time with `/petlog help`.
+4. **Open your log** with `/petlog` or the beast icon on the minimap.
+5. **Add the pets you already have** by calling each one and opening the stable at a stable master once. New tames are added automatically.
+6. **Move the icons:** press **Unlock icons** at the bottom of the log, drag the range icon and feed reminder where you want them, then press **Lock icons**.
+
+Found a bug? Type `/bug <what happened>`, then `/reload`. See [Reporting bugs](#reporting-bugs-with-pokebuglog).
+
 ## Install
 
 1. On GitHub, click **Code → Download ZIP** and unzip it. You can also grab a zip from **Releases**.
