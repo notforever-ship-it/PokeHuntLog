@@ -47,7 +47,11 @@ local function StartTame(unit)
   if info then
     info.time = GetTime()
     pending = info
-    HPL.Debug("taming " .. tostring(info.name) .. " (" .. tostring(info.family) .. ")")
+    local ids = info.npcIds and table.concat(info.npcIds, "/") or "-"
+    HPL.Debug("taming " .. tostring(info.name) .. " (" .. tostring(info.family) .. ", level " .. tostring(info.level) ..
+      ", guid " .. tostring(info.guid) .. ", npc ids " .. ids .. ")")
+  else
+    HPL.Debug("Tame Beast cast seen, but no beast target to remember")
   end
 end
 
@@ -150,6 +154,8 @@ function HPL.ScanActivePet(source)
       how = "custom"
     end
     local wasCaught = HPL.caught[skin] ~= nil
+    HPL.Debug("new tame: " .. name .. " (" .. family .. ") -> skin " .. tostring(skin) .. " via " .. tostring(how) ..
+      (tame == pending and "" or " (from last target)"))
     pet = {
       name = name, family = family, ctype = ctype, creature = tame.name, level = level,
       tamedLevel = tame.level, tamed = time(), zone = tame.zone, witnessed = true,
@@ -166,6 +172,8 @@ function HPL.ScanActivePet(source)
     local npcIds = HPL.NpcIdsFromGuid(HPL.UnitGuid("pet"))
     local skin, how = HPL.ResolveSkin(family, name, npcIds)
     local wasCaught = skin and HPL.caught[skin] ~= nil
+    HPL.Debug("first time seeing pet " .. name .. " (" .. family .. ", level " .. level .. ", source " .. tostring(source) ..
+      ", guid " .. tostring(guid) .. ") -> skin " .. tostring(skin) .. " via " .. tostring(how))
     pet = {
       name = name, family = family, ctype = ctype, level = level, firstSeen = time(), witnessed = false,
       creature = (how == "name" or how == "ambiguous") and name or nil,
@@ -176,6 +184,7 @@ function HPL.ScanActivePet(source)
     Announce(pet, wasCaught)
   else
     if level > (pet.level or 0) then
+      HPL.Debug(name .. " level " .. tostring(pet.level) .. " -> " .. level)
       pet.level = level
     end
     pet.lastSeen = time()
@@ -195,6 +204,8 @@ local function ScanStable()
     local ok, _, name, level, family = pcall(GetStablePetInfo, slot)
     if ok and ValidPetName(name) and family then
       local pet = FindPet(list, name, family)
+      HPL.Debug("stable slot " .. slot .. ": " .. name .. " (" .. family .. ", level " .. tostring(level) .. ")" ..
+        (pet and "" or " - new to the log"))
       if pet then
         if (level or 0) > (pet.level or 0) then
           pet.level = level
@@ -256,6 +267,9 @@ function HPL.InitTracker()
   f:SetScript("OnEvent", function()
     if event == "UNIT_CASTEVENT" then
       -- arg1 caster guid, arg2 target guid, arg3 "START"/"CAST"/"FAIL"/"CHANNEL", arg4 spell id
+      if arg4 == HPL.TAME_BEAST_SPELL_ID and arg1 == HPL.UnitGuid("player") then
+        HPL.Debug("UNIT_CASTEVENT Tame Beast: " .. tostring(arg3) .. ", target " .. tostring(arg2) .. ", duration " .. tostring(arg5))
+      end
       if arg4 == HPL.TAME_BEAST_SPELL_ID and arg3 ~= "FAIL" and arg1 == HPL.UnitGuid("player") then
         if type(arg2) == "string" and UnitExists(arg2) then
           StartTame(arg2)
@@ -264,9 +278,15 @@ function HPL.InitTracker()
         end
       end
     elseif event == "SPELLCAST_START" then
-      if arg1 == HPL.TAME_BEAST_NAME then StartTame("target") end
+      if arg1 == HPL.TAME_BEAST_NAME then
+        HPL.Debug("SPELLCAST_START " .. tostring(arg1) .. " " .. tostring(arg2))
+        StartTame("target")
+      end
     elseif event == "SPELLCAST_CHANNEL_START" then
-      if arg2 == HPL.TAME_BEAST_NAME or arg1 == HPL.TAME_BEAST_NAME then StartTame("target") end
+      if arg2 == HPL.TAME_BEAST_NAME or arg1 == HPL.TAME_BEAST_NAME then
+        HPL.Debug("SPELLCAST_CHANNEL_START " .. tostring(arg1) .. " " .. tostring(arg2))
+        StartTame("target")
+      end
     elseif event == "PLAYER_TARGET_CHANGED" then
       local info = CaptureBeast("target")
       if info then lastBeast = info end

@@ -4,7 +4,7 @@
 PokeHuntLog = {}
 local HPL = PokeHuntLog
 
-HPL.VERSION = "1.2.0"
+HPL.VERSION = "1.2.1"
 HPL.DB_VERSION = 1
 HPL.MAX_LEVEL = 60
 HPL.TAME_BEAST_SPELL_ID = 1515
@@ -33,13 +33,21 @@ HPL.FAMILY_ICONS = {
 }
 HPL.UNKNOWN_ICON = "Interface\\Icons\\INV_Misc_QuestionMark"
 
-function HPL.Print(msg)
-  DEFAULT_CHAT_FRAME:AddMessage(HPL.PREFIX .. tostring(msg))
+-- PokeBugLog (the !PokeBugLog addon) is optional; when it's installed, messages are also saved there.
+function HPL.Log(msg)
+  if PokeBugLog_Log then PokeBugLog_Log("PokeHuntLog", msg) end
 end
 
+function HPL.Print(msg)
+  DEFAULT_CHAT_FRAME:AddMessage(HPL.PREFIX .. tostring(msg))
+  HPL.Log(msg)
+end
+
+-- Always goes to the bug log; only shown in chat with /petlog debug on.
 function HPL.Debug(msg)
+  HPL.Log(msg)
   if HPL.db and HPL.db.settings.debug then
-    DEFAULT_CHAT_FRAME:AddMessage("|cff888888[HPL debug]|r " .. tostring(msg))
+    DEFAULT_CHAT_FRAME:AddMessage("|cff888888[PokeHuntLog debug]|r " .. tostring(msg))
   end
 end
 

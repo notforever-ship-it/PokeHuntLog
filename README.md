@@ -103,6 +103,10 @@ Nothing has been run in the game yet, so please try these and report anything od
 
 ## Changelog
 
+### 1.2.1
+
+- Works with the new **!PokeBugLog** addon: PokeHuntLog's messages and a trail of what it notices (tames, pet scans, stable pets, action bar slots) are saved there for bug reports.
+
 ### 1.2.0
 
 - Renamed the addon to **PokeHuntLog**. The folder is now `PokeHuntLog`.
@@ -122,6 +126,16 @@ Nothing has been run in the game yet, so please try these and report anything od
 ### 1.0.0
 
 - First version: the pet collection log (Type → Family → Skin, highest level per skin, uncaught skins hidden, 3D view of your current pet, assigning skins by hand).
+
+## Reporting bugs with !PokeBugLog
+
+`!PokeBugLog` is a small companion addon. It saves every Lua error (from any addon) and PokeHuntLog's activity to a file, so bugs can be looked at without screenshots. Install the `!PokeBugLog` folder next to `PokeHuntLog` in `InterfaceAddOns`.
+
+- `/bug <what happened>` adds a note to the log, e.g. `/bug tamed a boar but it went to unknown skin`.
+- `/bug errors` shows the last few errors in chat.
+- `/bug clear` empties the log.
+- The game only writes the file when you `/reload` or log out. It won't save if the game crashes.
+- The file is `WTFAccount<your account>SavedVariables!PokeBugLog.lua`.
 
 ## For developers
 

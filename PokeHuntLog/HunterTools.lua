@@ -112,6 +112,7 @@ local function ScanActionSlots()
       scanTip:Hide()
     end
   end
+  HPL.Debug("action bars: Auto Shot in slot " .. tostring(slots.autoShot) .. ", Wing Clip in slot " .. tostring(slots.wingClip))
 end
 
 local function HasAttackableTarget()
@@ -224,6 +225,7 @@ local function UpdateFeed(fromEvent)
     SetColor(feedFrame, look)
     feedFrame:Show()
     if fromEvent and lastHappiness and happiness < lastHappiness then
+      HPL.Debug("pet happiness dropped to " .. look.text)
       HPL.Print("|cffffd100" .. (UnitName("pet") or "Your pet") .. " is " .. string.lower(look.text) ..
         ". Time to feed it!|r")
       UIErrorsFrame:AddMessage((UnitName("pet") or "Your pet") .. " is " .. string.lower(look.text) .. " - feed your pet",

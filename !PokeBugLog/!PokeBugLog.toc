@@ -1,0 +1,8 @@
+## Interface: 11200
+## Title: PokeBugLog
+## Notes: Saves Lua errors and PokeHuntLog's activity log so they can be read after a /reload.
+## Author: stealthzi
+## Version: 1.0.0
+## SavedVariables: PokeBugLogDB
+
+PokeBugLog.lua
