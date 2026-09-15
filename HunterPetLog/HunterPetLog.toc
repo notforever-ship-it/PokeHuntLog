@@ -2,7 +2,7 @@
 ## Title: Hunter Pet Log
 ## Notes: Collection log for hunter pets: every family and skin you have tamed, and the highest level you got each to.
 ## Author: stealthzi
-## Version: 1.1.0
+## Version: 1.1.1
 ## SavedVariables: HunterPetLogDB
 
 Data\Skins.lua

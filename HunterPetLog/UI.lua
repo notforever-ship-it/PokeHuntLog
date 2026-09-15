@@ -474,6 +474,10 @@ local function CreateWindow()
   close:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -6, -6)
   close:SetScript("OnClick", function() frame:Hide() end)
 
+  local credit = frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+  credit:SetPoint("BOTTOM", frame, "BOTTOM", 0, 20)
+  credit:SetText(GREY .. "Made by " .. END .. "|cffabd473stealthzi" .. END)
+
   summaryText = frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
   summaryText:SetPoint("TOPLEFT", frame, "TOPLEFT", 24, -48)
   summaryText:SetJustifyH("LEFT")

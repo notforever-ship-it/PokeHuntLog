@@ -4,7 +4,7 @@
 HunterPetLog = {}
 local HPL = HunterPetLog
 
-HPL.VERSION = "1.1.0"
+HPL.VERSION = "1.1.1"
 HPL.DB_VERSION = 1
 HPL.MAX_LEVEL = 60
 HPL.TAME_BEAST_SPELL_ID = 1515

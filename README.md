@@ -103,6 +103,10 @@ Nothing has been run in the game yet, so please try these and report anything od
 
 ## Changelog
 
+### 1.1.1
+
+- Added "Made by stealthzi" at the bottom of the log window.
+
 ### 1.1.0
 
 - Added the range icon: In range, Dead zone, Melee or Out of range while you target something you can attack.
