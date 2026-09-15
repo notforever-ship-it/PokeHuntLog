@@ -1,5 +1,5 @@
--- PokeHuntLog: "How to use" window. Opens once on a hunter's first login, then with the Help button,
--- /petlog help, or Shift-clicking the minimap icon.
+-- PokeHuntLog: "How to use" window. Opens with the Help button in the log, /petlog help, or Shift-clicking
+-- the minimap icon.
 
 local HPL = PokeHuntLog
 
@@ -121,11 +121,4 @@ function HPL.ToggleHelp()
   else
     HPL.ShowHelp()
   end
-end
-
--- First login on a hunter: show the help once.
-function HPL.MaybeShowFirstHelp()
-  if HPL.db.settings.seenHelp or not HPL.IsHunter() then return end
-  HPL.db.settings.seenHelp = true
-  HPL.ShowHelp()
 end

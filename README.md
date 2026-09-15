@@ -23,7 +23,7 @@ It also adds two hunter helpers:
 
 1. **Download** the zip from the [latest release](https://github.com/notforever-ship-it/PokeHuntLog/releases/latest). Copy the `PokeHuntLog` folder inside it into `Interface\AddOns\` in your game folder, then fully restart the game. [Full install steps](#install).
 2. **Put Auto Shot and Wing Clip on your action bars.** Any slot works, even a bar page you never show. Drag the real spells from your spellbook; macros don't count. Without them the range icon can't tell where you are. (You learn Wing Clip at level 12.)
-3. **Log in on your hunter.** The *How to use* window pops up the first time. Reopen it any time with `/petlog help`.
+3. **Need instructions in game?** Press **Help** at the bottom of the log, or type `/petlog help`.
 4. **Open your log** with `/petlog` or the beast icon on the minimap.
 5. **Add the pets you already have** by calling each one and opening the stable at a stable master once. New tames are added automatically.
 6. **Move the icons:** press **Unlock icons** at the bottom of the log, drag the range icon and feed reminder where you want them, then press **Lock icons**.
@@ -46,7 +46,7 @@ Found a bug? See [Reporting bugs](#reporting-bugs).
 - Your collection is **shared by all your hunters** on this account. Each pet remembers which hunter it belongs to.
 - The first time you log in with the addon, **call your pet** and **open the stable** so it picks up the pets you already have.
 - Tame something new and you'll get a "New skin collected" message.
-- A **How to use** window opens the first time you log in on a hunter. Open it again with the **Help** button in the log, `/petlog help`, or Shift-clicking the minimap icon.
+- For instructions in game, open the **How to use** window with the **Help** button in the log, `/petlog help`, or Shift-clicking the minimap icon.
 
 ### Pets the log can't identify
 
@@ -115,10 +115,14 @@ So far the addon has been confirmed to load on Ravencraft, and the log window wo
 16. [ ] The range icon hides when you clear your target or the target dies.
 17. [ ] When your pet drops from Happy to Content, the happiness face appears with a chat message and sound. Clicking it starts Feed Pet, and the icon hides while the pet eats and once it's Happy again.
 18. [ ] **Unlock icons** lets you drag both icons, and the button then says Lock icons. They stay where you put them after `/reload`.
-19. [ ] The How to use window opens by itself the first time you log in on a hunter (but not on later logins), and again with Help, `/petlog help` or Shift-clicking the minimap icon. All the text fits in the window.
+19. [ ] The How to use window opens with Help, `/petlog help` or Shift-clicking the minimap icon, and never pops up by itself. All the text fits in the window.
 20. [ ] With Auto Shot removed from your bars, targeting an enemy prints a one-time hint to put it on a bar.
 
 ## Changelog
+
+### 1.3.2
+
+- The How to use window no longer pops up when you log in. Open it with the Help button, `/petlog help` or Shift-clicking the minimap icon.
 
 ### 1.3.1
 

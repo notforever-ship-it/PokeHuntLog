@@ -4,7 +4,7 @@
 PokeHuntLog = {}
 local HPL = PokeHuntLog
 
-HPL.VERSION = "1.3.1"
+HPL.VERSION = "1.3.2"
 HPL.DB_VERSION = 1
 HPL.MAX_LEVEL = 60
 HPL.TAME_BEAST_SPELL_ID = 1515
@@ -152,7 +152,6 @@ local function NewDB()
       feedReminder = true,
       feedWhen = "content",   -- "content": remind as soon as the pet isn't happy; "unhappy": only when unhappy
       feedSound = true,
-      seenHelp = false,
     },
     pets = {},     -- [charKey] = { pet records }
     custom = {},   -- [skinId] = skins discovered in game that aren't in the bundled database
@@ -320,8 +319,6 @@ loader:SetScript("OnEvent", function()
   HPL.InitTracker()
   HPL.InitMinimapButton()
   HPL.InitHunterTools()
-  -- Class info can be missing this early, so wait a moment before deciding to show the help.
-  HPL.After(6, function() HPL.MaybeShowFirstHelp() end)
 
   SLASH_POKEHUNTLOG1 = "/petlog"
   SLASH_POKEHUNTLOG2 = "/phl"
