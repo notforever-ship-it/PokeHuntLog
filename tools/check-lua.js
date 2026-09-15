@@ -35,7 +35,6 @@ const KNOWN_GLOBALS = new Set((
   "HasAction IsActionInRange GetActionTexture CheckInteractDistance UnitCanAttack GetPetHappiness UnitBuff " +
   "CastSpellByName WorldFrame " +
   "seterrorhandler geterrorhandler _ERRORMESSAGE debugstack GetNumAddOns GetAddOnInfo GetAddOnMetadata GetBuildInfo " +
-  "PokeBugLog_Log " +
   "SUPERWOW_VERSION"
 ).split(/\s+/).filter(Boolean));
 

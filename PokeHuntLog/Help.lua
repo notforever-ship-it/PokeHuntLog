@@ -40,7 +40,7 @@ local HELP_TEXT = table.concat({
   WHITE .. "/petlog feed unhappy" .. END .. " - only remind when the pet is unhappy",
   WHITE .. "/petlog uncaught" .. END .. " - show or hide skins you haven't caught",
   WHITE .. "/petlog commands" .. END .. " - list every command in chat",
-  WHITE .. "/bug <what happened>" .. END .. " - note a bug, then " .. WHITE .. "/reload" .. END .. " (needs !PokeBugLog)",
+  WHITE .. "/petlog debug on" .. END .. " - show what the addon notices in chat (handy for bug reports)",
 }, "\n")
 
 local frame, lockButton

@@ -21,21 +21,19 @@ It also adds two hunter helpers:
 
 ## Quick start
 
-1. **Download** the zip from the [latest release](https://github.com/notforever-ship-it/PokeHuntLog/releases/latest). Copy both folders inside it into `Interface\AddOns\` in your game folder, then fully restart the game. [Full install steps](#install).
+1. **Download** the zip from the [latest release](https://github.com/notforever-ship-it/PokeHuntLog/releases/latest). Copy the `PokeHuntLog` folder inside it into `Interface\AddOns\` in your game folder, then fully restart the game. [Full install steps](#install).
 2. **Put Auto Shot and Wing Clip on your action bars.** Any slot works, even a bar page you never show. Drag the real spells from your spellbook; macros don't count. Without them the range icon can't tell where you are. (You learn Wing Clip at level 12.)
 3. **Log in on your hunter.** The *How to use* window pops up the first time. Reopen it any time with `/petlog help`.
 4. **Open your log** with `/petlog` or the beast icon on the minimap.
 5. **Add the pets you already have** by calling each one and opening the stable at a stable master once. New tames are added automatically.
 6. **Move the icons:** press **Unlock icons** at the bottom of the log, drag the range icon and feed reminder where you want them, then press **Lock icons**.
 
-Found a bug? Type `/bug <what happened>`, then `/reload`. See [Reporting bugs](#reporting-bugs-with-pokebuglog).
+Found a bug? See [Reporting bugs](#reporting-bugs).
 
 ## Install
 
 1. On GitHub, click **Code → Download ZIP** and unzip it. You can also grab a zip from **Releases**.
-2. Inside the unzipped folder are two addon folders. Copy both into `World of Warcraft\Interface\AddOns\`:
-   - `PokeHuntLog`: the addon itself. The path should end in `Interface\AddOns\PokeHuntLog\PokeHuntLog.toc`.
-   - `!PokeBugLog`: optional. It saves errors for bug reports; see [Reporting bugs](#reporting-bugs-with-pokebuglog).
+2. Copy the `PokeHuntLog` folder from inside it into `World of Warcraft\Interface\AddOns\`. The path should end in `Interface\AddOns\PokeHuntLog\PokeHuntLog.toc`.
 3. Fully restart the game. `/reload` doesn't pick up newly added addons.
 4. On the character select screen, click **AddOns** and make sure PokeHuntLog is ticked. If it's greyed out as "out of date", tick **Load out of date AddOns**.
 
@@ -122,6 +120,10 @@ So far the addon has been confirmed to load on Ravencraft, and the log window wo
 
 ## Changelog
 
+### 1.3.1
+
+- Removed the !PokeBugLog companion addon. If you installed it, you can delete the `!PokeBugLog` folder from `Interface\AddOns\`.
+
 ### 1.3.0
 
 - Added a **How to use** window. It opens on your first hunter login, and afterwards with the Help button, `/petlog help` or Shift-clicking the minimap icon.
@@ -152,21 +154,17 @@ So far the addon has been confirmed to load on Ravencraft, and the log window wo
 
 - First version: the pet collection log (Type → Family → Skin, highest level per skin, uncaught skins hidden, 3D view of your current pet, assigning skins by hand).
 
-## Reporting bugs with !PokeBugLog
+## Reporting bugs
 
-`!PokeBugLog` is a small companion addon. It saves every Lua error (from any addon) and PokeHuntLog's activity to a file, so bugs can be looked at without screenshots. Install the `!PokeBugLog` folder next to `PokeHuntLog` in `Interface\AddOns\`.
-
-- `/bug <what happened>` adds a note to the log, e.g. `/bug tamed a boar but it went to unknown skin`.
-- `/bug errors` shows the last few errors in chat.
-- `/bug clear` empties the log.
-- The game only writes the file when you `/reload` or log out. It won't save if the game crashes.
-- The file is `WTF\Account\<your account>\SavedVariables\!PokeBugLog.lua`.
+1. Type `/console scriptErrors 1` once, so Lua errors pop up on screen.
+2. When something goes wrong, screenshot any error box. Also type `/petlog debug` with your pet out or your target selected.
+3. [Open an issue](https://github.com/notforever-ship-it/PokeHuntLog/issues) with the screenshot and what you did, what you expected, and what happened.
 
 ## For developers
 
 - `PokeHuntLog/Data/Skins.lua` is generated. To rebuild it, run `node tools/build-skins.js`. Downloaded pages are cached in `tools/cache/`; delete that folder to download fresh copies.
 - `node tools/check-lua.js` parses every addon file as **Lua 5.0**. It fails on syntax errors or 5.1-only features (`#`, `%`, `...`, `string.match`) and lists any unknown global names. Run it before shipping changes, since the game client is the only other way to find these errors.
-- `node tools/install.js "<path to Interface\AddOns>"` copies both addons into a game install, replacing only the `PokeHuntLog` and `!PokeBugLog` folders.
+- `node tools/install.js "<path to Interface\AddOns>"` copies the addon into a game install, replacing only the `PokeHuntLog` folder.
 
 ## Credits
 

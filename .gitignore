@@ -3,3 +3,7 @@ tools/cache/
 # Private planning notes, kept local
 .planning/
 PROJECT-BRIEF.md
+
+# Archives made for sharing
+*.rar
+*.zip

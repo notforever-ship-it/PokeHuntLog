@@ -1,11 +1,11 @@
-// Copies the addons from this project into the game's AddOns folder, replacing only these addon folders.
+// Copies the addon from this project into the game's AddOns folder, replacing only its own folder.
 // Usage: node tools/install.js [path to Interface\AddOns]
 
 const fs = require("fs");
 const path = require("path");
 
 const ROOT = path.resolve(__dirname, "..");
-const ADDONS = ["PokeHuntLog", "!PokeBugLog"];
+const ADDONS = ["PokeHuntLog"];
 const target = path.resolve(process.argv[2] || "E:\\Ravencraft\\twmoa_1181\\Interface\\AddOns");
 
 if (!fs.existsSync(target)) {
