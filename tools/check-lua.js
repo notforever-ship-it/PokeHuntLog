@@ -32,6 +32,8 @@ const KNOWN_GLOBALS = new Set((
   "GetRealmName GetZoneText GetRealZoneText GetTime UnitAffectingCombat " +
   // SuperWoW
   "UNKNOWNOBJECT PetRename " +
+  "HasAction IsActionInRange GetActionTexture CheckInteractDistance UnitCanAttack GetPetHappiness UnitBuff " +
+  "CastSpellByName WorldFrame " +
   "SUPERWOW_VERSION"
 ).split(/\s+/).filter(Boolean));
 

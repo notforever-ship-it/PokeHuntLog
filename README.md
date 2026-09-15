@@ -10,6 +10,15 @@ Each skin shows the highest level you've gotten a pet with that skin to, out of 
 
 Skins you haven't caught stay hidden. Tick **Show uncaught** to browse all 117 skins, with where to tame each one.
 
+It also adds two hunter helpers:
+
+- **Range icon.** Shows while you target something you can attack, and tells you whether you can shoot it:
+  - green **In range**
+  - red **Dead zone** (too close to shoot, too far to melee)
+  - orange **Melee**
+  - grey **Out of range**
+- **Feed reminder.** A happiness face pops up when your pet drops to Content (or only at Unhappy, if you prefer), with a chat message and a sound. Click it to cast Feed Pet, then click a food in your bags.
+
 ## Install
 
 1. Copy the `HunterPetLog` folder into `World of Warcraft\Interface\AddOns\`. The path should end in `Interface\AddOns\HunterPetLog\HunterPetLog.toc`.
@@ -36,6 +45,12 @@ The game doesn't tell addons which skin a pet has. The log works it out from the
 
 To remove a pet from the log, Shift-click **Forget pet**.
 
+### Range icon and feed reminder
+
+- Turn them on or off with the **Range icon** and **Feed reminder** checkboxes at the top of the log.
+- The range icon needs **Auto Shot** on one of your action bars to be accurate. Put **Wing Clip** on a bar too and it can tell melee range apart from the dead zone. Hidden bars count.
+- To move them, type `/petlog move`, drag them, and type `/petlog move` again to lock them. The feed reminder can also be Shift-dragged at any time.
+
 ### Commands
 
 | Command | What it does |
@@ -44,6 +59,11 @@ To remove a pet from the log, Shift-click **Forget pet**.
 | `/petlog uncaught` | Show or hide skins you haven't caught |
 | `/petlog minimap` | Show or hide the minimap button |
 | `/petlog notify` | Turn "new skin" messages on or off |
+| `/petlog range` | Turn the range icon on or off |
+| `/petlog feed` | Turn the feed reminder on or off |
+| `/petlog feed content` / `/petlog feed unhappy` | Remind when the pet is Content or worse (default), or only when Unhappy |
+| `/petlog feed sound` | Turn the reminder sound on or off |
+| `/petlog move` | Unlock the range icon and feed reminder so you can drag them |
 | `/petlog scan` | Re-check your current pet |
 | `/petlog unassign <pet name>` | Clear a pet's skin so you can pick it again |
 | `/petlog forget <pet name>` | Remove a saved pet |
@@ -75,7 +95,11 @@ Nothing has been run in the game yet, so please try these and report anything od
 11. [ ] Renaming your pet keeps it under the same skin, with no duplicate entry.
 12. [ ] Logging in on another hunter shows the same collection, and new pets are tagged with that hunter.
 13. [ ] **SuperWoW only:** `/petlog debug` with a beast targeted shows an npc id, and the id matches the creature on Wowhead Classic. If it doesn't, send the output: the GUID parsing may need a one-line fix.
-14. [ ] Nothing odd happens when a non-hunter logs in.
+14. [ ] Nothing odd happens when a non-hunter logs in, and the range icon and feed reminder never show for them.
+15. [ ] With Auto Shot on a bar, targeting a mob shows the range icon. It reads green In range at shooting distance, red Dead zone just outside melee, orange Melee when touching it (needs Wing Clip on a bar), and grey Out of range when far away.
+16. [ ] The range icon hides when you clear your target or the target dies.
+17. [ ] When your pet drops from Happy to Content, the happiness face appears with a chat message and sound. Clicking it starts Feed Pet, and the icon hides while the pet eats and once it's Happy again.
+18. [ ] `/petlog move` lets you drag both icons, and they stay where you put them after `/reload`.
 
 ## For developers
 

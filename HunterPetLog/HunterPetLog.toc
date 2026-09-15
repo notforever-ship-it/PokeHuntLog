@@ -11,3 +11,4 @@ Collection.lua
 Tracker.lua
 UI.lua
 Minimap.lua
+HunterTools.lua

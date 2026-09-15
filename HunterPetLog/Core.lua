@@ -147,6 +147,10 @@ local function NewDB()
       minimapHidden = false,
       collapsed = {},
       debug = false,
+      rangeIcon = true,
+      feedReminder = true,
+      feedWhen = "content",   -- "content": remind as soon as the pet isn't happy; "unhappy": only when unhappy
+      feedSound = true,
     },
     pets = {},     -- [charKey] = { pet records }
     custom = {},   -- [skinId] = skins discovered in game that aren't in the bundled database
@@ -221,6 +225,27 @@ local function SlashHandler(msg)
   elseif cmd == "notify" then
     HPL.db.settings.notify = not HPL.db.settings.notify
     HPL.Print("new skin messages " .. (HPL.db.settings.notify and "on" or "off") .. ".")
+  elseif cmd == "range" then
+    HPL.db.settings.rangeIcon = not HPL.db.settings.rangeIcon
+    HPL.Print("range icon " .. (HPL.db.settings.rangeIcon and "on" or "off") .. ".")
+    HPL.UpdateHunterTools()
+    if HPL.RefreshUI then HPL.RefreshUI() end
+  elseif cmd == "feed" then
+    local s = HPL.db.settings
+    if rest == "content" or rest == "unhappy" then
+      s.feedWhen = rest
+      s.feedReminder = true
+    elseif rest == "sound" then
+      s.feedSound = not s.feedSound
+      HPL.Print("feed reminder sound " .. (s.feedSound and "on" or "off") .. ".")
+    else
+      s.feedReminder = not s.feedReminder
+    end
+    HPL.Print("feed reminder " .. (s.feedReminder and ("on, when your pet is " .. s.feedWhen .. " or worse") or "off") .. ".")
+    HPL.UpdateHunterTools()
+    if HPL.RefreshUI then HPL.RefreshUI() end
+  elseif cmd == "move" then
+    HPL.ToggleMoveIcons()
   elseif cmd == "scan" then
     HPL.ScanActivePet("scan")
     HPL.Print("checked your current pet.")
@@ -261,6 +286,11 @@ local function SlashHandler(msg)
     HPL.Print("/petlog uncaught - show or hide skins you haven't caught")
     HPL.Print("/petlog minimap - show or hide the minimap button")
     HPL.Print("/petlog notify - turn new skin messages on or off")
+    HPL.Print("/petlog range - turn the range icon on or off")
+    HPL.Print("/petlog feed - turn the feed reminder on or off")
+    HPL.Print("/petlog feed content | unhappy - when the feed reminder shows")
+    HPL.Print("/petlog feed sound - turn the feed reminder sound on or off")
+    HPL.Print("/petlog move - unlock the range icon and feed reminder so you can drag them")
     HPL.Print("/petlog scan - re-check your current pet")
     HPL.Print("/petlog unassign <pet name> - clear a pet's skin so you can pick it again")
     HPL.Print("/petlog forget <pet name> - remove a saved pet")
@@ -284,6 +314,7 @@ loader:SetScript("OnEvent", function()
   HPL.RebuildCollection()
   HPL.InitTracker()
   HPL.InitMinimapButton()
+  HPL.InitHunterTools()
 
   SLASH_HUNTERPETLOG1 = "/petlog"
   SLASH_HUNTERPETLOG2 = "/hpl"

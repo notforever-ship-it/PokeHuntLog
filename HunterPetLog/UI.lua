@@ -7,7 +7,7 @@ local ROW_HEIGHT, NUM_ROWS, ROW_WIDTH = 18, 20, 318
 local DETAIL_WIDTH = 236
 local MAX_WHERE_LINES = 6
 
-local frame, scroll, detail, emptyText, summaryText, uncaughtCheck
+local frame, scroll, detail, emptyText, summaryText, uncaughtCheck, rangeCheck, feedCheck
 local buttons = {}
 HPL.rows = {}
 HPL.selected = nil      -- { kind = "skin", id = skinId } or { kind = "pet", pet = petRecord, charKey = key }
@@ -385,6 +385,8 @@ function HPL.RefreshUI()
     " (" .. HPL.Percent(HPL.totals.caught, HPL.totals.skins) .. "%)" ..
     GOLD .. "     Tames: " .. END .. HPL.db.stats.tames)
   uncaughtCheck:SetChecked(HPL.db.settings.showUncaught)
+  rangeCheck:SetChecked(HPL.db.settings.rangeIcon)
+  feedCheck:SetChecked(HPL.db.settings.feedReminder)
   HPL.BuildRows()
   HPL.UpdateDetail()
   HPL.UpdateList()
@@ -487,6 +489,28 @@ local function CreateWindow()
   uncaughtCheck:SetScript("OnClick", function()
     HPL.db.settings.showUncaught = this:GetChecked() and true or false
     HPL.Changed()
+  end)
+
+  rangeCheck = CreateFrame("CheckButton", "HunterPetLogRangeCheck", frame, "UICheckButtonTemplate")
+  rangeCheck:SetWidth(24)
+  rangeCheck:SetHeight(24)
+  rangeCheck:SetPoint("TOPLEFT", frame, "TOPLEFT", 370, -42)
+  local rangeLabel = getglobal("HunterPetLogRangeCheckText")
+  if rangeLabel then rangeLabel:SetText("Range icon") end
+  rangeCheck:SetScript("OnClick", function()
+    HPL.db.settings.rangeIcon = this:GetChecked() and true or false
+    HPL.UpdateHunterTools()
+  end)
+
+  feedCheck = CreateFrame("CheckButton", "HunterPetLogFeedCheck", frame, "UICheckButtonTemplate")
+  feedCheck:SetWidth(24)
+  feedCheck:SetHeight(24)
+  feedCheck:SetPoint("TOPLEFT", frame, "TOPLEFT", 480, -42)
+  local feedLabel = getglobal("HunterPetLogFeedCheckText")
+  if feedLabel then feedLabel:SetText("Feed reminder") end
+  feedCheck:SetScript("OnClick", function()
+    HPL.db.settings.feedReminder = this:GetChecked() and true or false
+    HPL.UpdateHunterTools()
   end)
 
   -- List
