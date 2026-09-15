@@ -1,6 +1,6 @@
--- Hunter Pet Log: main window. Left: Type -> Family -> Skin list. Right: details for the selected row.
+-- PokeHuntLog: main window. Left: Type -> Family -> Skin list. Right: details for the selected row.
 
-local HPL = HunterPetLog
+local HPL = PokeHuntLog
 
 local WIDTH, HEIGHT = 640, 480
 local ROW_HEIGHT, NUM_ROWS, ROW_WIDTH = 18, 20, 318
@@ -397,7 +397,7 @@ end
 ------------------------------------------------------------------------------------------------
 
 local function CreateRow(i)
-  local btn = CreateFrame("Button", "HunterPetLogRow" .. i, frame)
+  local btn = CreateFrame("Button", "PokeHuntLogRow" .. i, frame)
   btn:SetWidth(ROW_WIDTH)
   btn:SetHeight(ROW_HEIGHT)
   btn:SetPoint("TOPLEFT", scroll, "TOPLEFT", 0, -(i - 1) * ROW_HEIGHT)
@@ -438,7 +438,7 @@ local function CreateRow(i)
 end
 
 local function CreateWindow()
-  frame = CreateFrame("Frame", "HunterPetLogFrame", UIParent)
+  frame = CreateFrame("Frame", "PokeHuntLogFrame", UIParent)
   frame:SetWidth(WIDTH)
   frame:SetHeight(HEIGHT)
   frame:SetFrameStrata("HIGH")
@@ -464,13 +464,13 @@ local function CreateWindow()
   end)
   frame:SetScript("OnShow", function() HPL.RefreshUI() end)
   frame:SetScript("OnHide", function() HPL.assigning = nil end)
-  table.insert(UISpecialFrames, "HunterPetLogFrame")
+  table.insert(UISpecialFrames, "PokeHuntLogFrame")
 
   local title = frame:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
   title:SetPoint("TOP", frame, "TOP", 0, -18)
-  title:SetText("Hunter Pet Log")
+  title:SetText("PokeHuntLog")
 
-  local close = CreateFrame("Button", "HunterPetLogCloseButton", frame, "UIPanelCloseButton")
+  local close = CreateFrame("Button", "PokeHuntLogCloseButton", frame, "UIPanelCloseButton")
   close:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -6, -6)
   close:SetScript("OnClick", function() frame:Hide() end)
 
@@ -482,11 +482,11 @@ local function CreateWindow()
   summaryText:SetPoint("TOPLEFT", frame, "TOPLEFT", 24, -48)
   summaryText:SetJustifyH("LEFT")
 
-  uncaughtCheck = CreateFrame("CheckButton", "HunterPetLogUncaughtCheck", frame, "UICheckButtonTemplate")
+  uncaughtCheck = CreateFrame("CheckButton", "PokeHuntLogUncaughtCheck", frame, "UICheckButtonTemplate")
   uncaughtCheck:SetWidth(24)
   uncaughtCheck:SetHeight(24)
   uncaughtCheck:SetPoint("TOPLEFT", frame, "TOPLEFT", 240, -42)
-  local checkLabel = getglobal("HunterPetLogUncaughtCheckText")
+  local checkLabel = getglobal("PokeHuntLogUncaughtCheckText")
   if checkLabel then
     checkLabel:SetText("Show uncaught")
   end
@@ -495,22 +495,22 @@ local function CreateWindow()
     HPL.Changed()
   end)
 
-  rangeCheck = CreateFrame("CheckButton", "HunterPetLogRangeCheck", frame, "UICheckButtonTemplate")
+  rangeCheck = CreateFrame("CheckButton", "PokeHuntLogRangeCheck", frame, "UICheckButtonTemplate")
   rangeCheck:SetWidth(24)
   rangeCheck:SetHeight(24)
   rangeCheck:SetPoint("TOPLEFT", frame, "TOPLEFT", 370, -42)
-  local rangeLabel = getglobal("HunterPetLogRangeCheckText")
+  local rangeLabel = getglobal("PokeHuntLogRangeCheckText")
   if rangeLabel then rangeLabel:SetText("Range icon") end
   rangeCheck:SetScript("OnClick", function()
     HPL.db.settings.rangeIcon = this:GetChecked() and true or false
     HPL.UpdateHunterTools()
   end)
 
-  feedCheck = CreateFrame("CheckButton", "HunterPetLogFeedCheck", frame, "UICheckButtonTemplate")
+  feedCheck = CreateFrame("CheckButton", "PokeHuntLogFeedCheck", frame, "UICheckButtonTemplate")
   feedCheck:SetWidth(24)
   feedCheck:SetHeight(24)
   feedCheck:SetPoint("TOPLEFT", frame, "TOPLEFT", 480, -42)
-  local feedLabel = getglobal("HunterPetLogFeedCheckText")
+  local feedLabel = getglobal("PokeHuntLogFeedCheckText")
   if feedLabel then feedLabel:SetText("Feed reminder") end
   feedCheck:SetScript("OnClick", function()
     HPL.db.settings.feedReminder = this:GetChecked() and true or false
@@ -525,7 +525,7 @@ local function CreateWindow()
   Backdrop(listBg, false)
   listBg:SetFrameLevel(frame:GetFrameLevel() + 1)
 
-  scroll = CreateFrame("ScrollFrame", "HunterPetLogListScroll", frame, "FauxScrollFrameTemplate")
+  scroll = CreateFrame("ScrollFrame", "PokeHuntLogListScroll", frame, "FauxScrollFrameTemplate")
   scroll:SetPoint("TOPLEFT", listBg, "TOPLEFT", 6, -6)
   scroll:SetWidth(ROW_WIDTH)
   scroll:SetHeight(NUM_ROWS * ROW_HEIGHT)
@@ -588,7 +588,7 @@ local function CreateWindow()
   detail.text:SetJustifyH("LEFT")
   detail.text:SetJustifyV("TOP")
 
-  detail.assign = CreateFrame("Button", "HunterPetLogAssignButton", detail, "UIPanelButtonTemplate")
+  detail.assign = CreateFrame("Button", "PokeHuntLogAssignButton", detail, "UIPanelButtonTemplate")
   detail.assign:SetWidth(104)
   detail.assign:SetHeight(22)
   detail.assign:SetPoint("BOTTOMLEFT", detail, "BOTTOMLEFT", 8, 8)
@@ -605,7 +605,7 @@ local function CreateWindow()
     HPL.RefreshUI()
   end)
 
-  detail.forget = CreateFrame("Button", "HunterPetLogForgetButton", detail, "UIPanelButtonTemplate")
+  detail.forget = CreateFrame("Button", "PokeHuntLogForgetButton", detail, "UIPanelButtonTemplate")
   detail.forget:SetWidth(104)
   detail.forget:SetHeight(22)
   detail.forget:SetPoint("BOTTOMRIGHT", detail, "BOTTOMRIGHT", -8, 8)

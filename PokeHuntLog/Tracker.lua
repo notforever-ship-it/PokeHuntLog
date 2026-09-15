@@ -1,4 +1,4 @@
--- Hunter Pet Log: notices tames, pet levels, renames and stabled pets.
+-- PokeHuntLog: notices tames, pet levels, renames and stabled pets.
 --
 -- Tame detection:
 --   * With SuperWoW, UNIT_CASTEVENT tells us the player cast Tame Beast (spell 1515) and on which creature.
@@ -7,7 +7,7 @@
 --   Either way the beast's details are remembered, and when a pet with that name appears soon after
 --   (UNIT_PET), it counts as a new tame.
 
-local HPL = HunterPetLog
+local HPL = PokeHuntLog
 
 local pending = nil        -- beast being tamed: { name, family, ctype, level, zone, npcIds, time }
 local lastBeast = nil      -- last beast targeted, in case the cast event arrives after the target changed

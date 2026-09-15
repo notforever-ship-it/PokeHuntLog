@@ -1,16 +1,16 @@
--- Hunter Pet Log: shared namespace, saved variables, helpers and slash commands.
+-- PokeHuntLog: shared namespace, saved variables, helpers and slash commands.
 -- Target client is WoW 1.12.1 (Lua 5.0): no '#', no '%', no string.match, varargs via 'arg'.
 
-HunterPetLog = {}
-local HPL = HunterPetLog
+PokeHuntLog = {}
+local HPL = PokeHuntLog
 
-HPL.VERSION = "1.1.1"
+HPL.VERSION = "1.2.0"
 HPL.DB_VERSION = 1
 HPL.MAX_LEVEL = 60
 HPL.TAME_BEAST_SPELL_ID = 1515
 HPL.TAME_BEAST_NAME = "Tame Beast"
 HPL.TAME_WINDOW = 60          -- seconds between starting Tame Beast and the pet appearing
-HPL.PREFIX = "|cffabd473Hunter Pet Log:|r "
+HPL.PREFIX = "|cffabd473PokeHuntLog:|r "
 
 HPL.FAMILY_ICONS = {
   ["Bat"] = "Ability_Hunter_Pet_Bat",
@@ -272,8 +272,8 @@ local function SlashHandler(msg)
     end
   elseif cmd == "reset" then
     if rest == "confirm" then
-      HunterPetLogDB = NewDB()
-      HPL.db = HunterPetLogDB
+      PokeHuntLogDB = NewDB()
+      HPL.db = PokeHuntLogDB
       HPL.BuildIndex()
       HPL.Changed()
       HPL.Print("all saved pets and settings were reset.")
@@ -302,13 +302,13 @@ end
 local loader = CreateFrame("Frame")
 loader:RegisterEvent("ADDON_LOADED")
 loader:SetScript("OnEvent", function()
-  if event ~= "ADDON_LOADED" or arg1 ~= "HunterPetLog" then return end
+  if event ~= "ADDON_LOADED" or arg1 ~= "PokeHuntLog" then return end
   loader:UnregisterEvent("ADDON_LOADED")
 
-  if type(HunterPetLogDB) ~= "table" then
-    HunterPetLogDB = NewDB()
+  if type(PokeHuntLogDB) ~= "table" then
+    PokeHuntLogDB = NewDB()
   end
-  HPL.db = UpgradeDB(HunterPetLogDB)
+  HPL.db = UpgradeDB(PokeHuntLogDB)
 
   HPL.BuildIndex()
   HPL.RebuildCollection()
@@ -316,7 +316,7 @@ loader:SetScript("OnEvent", function()
   HPL.InitMinimapButton()
   HPL.InitHunterTools()
 
-  SLASH_HUNTERPETLOG1 = "/petlog"
-  SLASH_HUNTERPETLOG2 = "/hpl"
-  SlashCmdList["HUNTERPETLOG"] = SlashHandler
+  SLASH_POKEHUNTLOG1 = "/petlog"
+  SLASH_POKEHUNTLOG2 = "/phl"
+  SlashCmdList["POKEHUNTLOG"] = SlashHandler
 end)

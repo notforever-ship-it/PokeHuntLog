@@ -3,7 +3,7 @@
 // - Rejects 5.1+ syntax: '#', '%', '...' used as an expression, [=[ long brackets ]=].
 // - Flags 5.1+/later-client library calls (string.match, select, ...).
 // - Lists global names read but never defined by the addon or on the known-API list.
-// Usage: node tools/check-lua.js [dir]   (default: HunterPetLog)
+// Usage: node tools/check-lua.js [dir]   (default: PokeHuntLog)
 
 const fs = require("fs");
 const path = require("path");
@@ -352,7 +352,7 @@ class Parser {
 }
 
 function main() {
-  const root = path.resolve(process.argv[2] || path.join(__dirname, "..", "HunterPetLog"));
+  const root = path.resolve(process.argv[2] || path.join(__dirname, "..", "PokeHuntLog"));
   const files = [];
   const walk = (d) => fs.readdirSync(d, { withFileTypes: true }).forEach((e) => {
     const p = path.join(d, e.name);

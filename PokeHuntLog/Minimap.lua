@@ -1,6 +1,6 @@
--- Hunter Pet Log: minimap button. Left-click opens the log, drag moves it around the minimap.
+-- PokeHuntLog: minimap button. Left-click opens the log, drag moves it around the minimap.
 
-local HPL = HunterPetLog
+local HPL = PokeHuntLog
 
 local button
 
@@ -29,7 +29,7 @@ function HPL.UpdateMinimapButton()
 end
 
 function HPL.InitMinimapButton()
-  button = CreateFrame("Button", "HunterPetLogMinimapButton", Minimap)
+  button = CreateFrame("Button", "PokeHuntLogMinimapButton", Minimap)
   button:SetWidth(31)
   button:SetHeight(31)
   button:SetFrameStrata("MEDIUM")
@@ -64,7 +64,7 @@ function HPL.InitMinimapButton()
   button:SetScript("OnDragStop", function() this:SetScript("OnUpdate", nil) end)
   button:SetScript("OnEnter", function()
     GameTooltip:SetOwner(this, "ANCHOR_LEFT")
-    GameTooltip:SetText("Hunter Pet Log")
+    GameTooltip:SetText("PokeHuntLog")
     if HPL.totals then
       GameTooltip:AddLine("Skins: " .. HPL.totals.caught .. " / " .. HPL.totals.skins, 1, 1, 1)
     end

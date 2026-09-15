@@ -1,4 +1,4 @@
-# Hunter Pet Log
+# PokeHuntLog
 
 A collection log for hunter pets on Ravencraft (and other 1.12.1 servers). It records every beast you tame and groups your collection as:
 
@@ -21,9 +21,9 @@ It also adds two hunter helpers:
 
 ## Install
 
-1. Copy the `HunterPetLog` folder into `World of Warcraft\Interface\AddOns\`. The path should end in `Interface\AddOns\HunterPetLog\HunterPetLog.toc`.
+1. Copy the `PokeHuntLog` folder into `World of Warcraft\Interface\AddOns\`. The path should end in `Interface\AddOns\PokeHuntLog\PokeHuntLog.toc`.
 2. Restart the game, or type `/reload` if it's already running.
-3. On the character select screen, click **AddOns** and make sure Hunter Pet Log is ticked. If it's greyed out as "out of date", tick **Load out of date AddOns**.
+3. On the character select screen, click **AddOns** and make sure PokeHuntLog is ticked. If it's greyed out as "out of date", tick **Load out of date AddOns**.
 
 ## Use
 
@@ -103,6 +103,12 @@ Nothing has been run in the game yet, so please try these and report anything od
 
 ## Changelog
 
+### 1.2.0
+
+- Renamed the addon to **PokeHuntLog**. The folder is now `PokeHuntLog`.
+- To update, **delete the old `HunterPetLog` folder** from `Interface\AddOns\` before adding `PokeHuntLog`, or both will load. Then restart the game; `/reload` doesn't pick up a renamed addon.
+- Saved data is stored under the new name, so the log starts fresh.
+
 ### 1.1.1
 
 - Added "Made by stealthzi" at the bottom of the log window.
@@ -119,7 +125,7 @@ Nothing has been run in the game yet, so please try these and report anything od
 
 ## For developers
 
-- `HunterPetLog/Data/Skins.lua` is generated. To rebuild it, run `node tools/build-skins.js`. Downloaded pages are cached in `tools/cache/`; delete that folder to download fresh copies.
+- `PokeHuntLog/Data/Skins.lua` is generated. To rebuild it, run `node tools/build-skins.js`. Downloaded pages are cached in `tools/cache/`; delete that folder to download fresh copies.
 - `node tools/check-lua.js` parses every addon file as **Lua 5.0**. It fails on syntax errors or 5.1-only features (`#`, `%`, `...`, `string.match`) and lists any unknown global names. Run it before shipping changes, since the game client is the only other way to find these errors.
 
 ## Credits

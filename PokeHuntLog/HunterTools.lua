@@ -1,4 +1,4 @@
--- Hunter Pet Log: range indicator and pet feeding reminder.
+-- PokeHuntLog: range indicator and pet feeding reminder.
 --
 -- Range: Auto Shot's range check (IsActionInRange) says whether you can shoot. When you can't and the target
 -- is within ~10 yards (CheckInteractDistance 3), Wing Clip's range check tells melee range from the dead zone.
@@ -7,7 +7,7 @@
 -- Feeding: GetPetHappiness() drops from Happy (3) to Content (2) to Unhappy (1). The reminder shows while the
 -- pet is below the chosen level and isn't already eating. Clicking it casts Feed Pet.
 
-local HPL = HunterPetLog
+local HPL = PokeHuntLog
 
 local AUTO_SHOT = "Auto Shot"
 local WING_CLIP = "Wing Clip"
@@ -96,13 +96,13 @@ local function ScanActionSlots()
   slotsDirty = false
   slots.autoShot, slots.wingClip = nil, nil
   if not scanTip then
-    scanTip = CreateFrame("GameTooltip", "HunterPetLogScanTooltip", nil, "GameTooltipTemplate")
+    scanTip = CreateFrame("GameTooltip", "PokeHuntLogScanTooltip", nil, "GameTooltipTemplate")
   end
   for slot = 1, 120 do
     if HasAction(slot) then
       scanTip:SetOwner(WorldFrame, "ANCHOR_NONE")
       scanTip:SetAction(slot)
-      local line = getglobal("HunterPetLogScanTooltipTextLeft1")
+      local line = getglobal("PokeHuntLogScanTooltipTextLeft1")
       local text = line and line:GetText()
       if text == AUTO_SHOT and not slots.autoShot then
         slots.autoShot = slot
@@ -258,12 +258,12 @@ end
 
 function HPL.InitHunterTools()
   -- Frames are created for every class (class info may not be ready this early) and only shown to hunters.
-  rangeFrame = CreateIcon("HunterPetLogRangeIcon", "rangePosition", -140, 36)
+  rangeFrame = CreateIcon("PokeHuntLogRangeIcon", "rangePosition", -140, 36)
   rangeFrame.icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
   rangeFrame:EnableMouse(false)   -- don't block clicks in the middle of the screen
   rangeFrame:SetScript("OnUpdate", RangeOnUpdate)
 
-  feedFrame = CreateIcon("HunterPetLogFeedReminder", "feedPosition", 180, 40)
+  feedFrame = CreateIcon("PokeHuntLogFeedReminder", "feedPosition", 180, 40)
   feedFrame.icon:SetTexture(HAPPINESS_TEXTURE)
   feedFrame:EnableMouse(true)
   feedFrame:RegisterForClicks("LeftButtonUp")

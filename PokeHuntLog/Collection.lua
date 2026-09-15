@@ -1,6 +1,6 @@
--- Hunter Pet Log: the skin index (bundled + discovered skins) and the collection built from saved pets.
+-- PokeHuntLog: the skin index (bundled + discovered skins) and the collection built from saved pets.
 
-local HPL = HunterPetLog
+local HPL = PokeHuntLog
 
 HPL.skinsById = {}      -- [skinId] = { id, type, family, model, name, npcs, custom }
 HPL.skinByNpcId = {}    -- [npcId] = skinId
@@ -33,7 +33,7 @@ function HPL.BuildIndex()
   HPL.skinByNpcId = {}
   HPL.skinsByName = {}
 
-  local data = HunterPetLog_Skins or {}
+  local data = PokeHuntLog_Skins or {}
   for i = 1, table.getn(data) do
     local s = data[i]
     Register({ id = s.id, type = "Beast", family = s.family, model = s.model, name = s.name, npcs = s.npcs })
