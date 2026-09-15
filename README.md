@@ -37,6 +37,7 @@ It also adds two hunter helpers:
 - Your collection is **shared by all your hunters** on this account. Each pet remembers which hunter it belongs to.
 - The first time you log in with the addon, **call your pet** and **open the stable** so it picks up the pets you already have.
 - Tame something new and you'll get a "New skin collected" message.
+- A **How to use** window opens the first time you log in on a hunter. Open it again with the **Help** button in the log, `/petlog help`, or Shift-clicking the minimap icon.
 
 ### Pets the log can't identify
 
@@ -52,13 +53,15 @@ To remove a pet from the log, Shift-click **Forget pet**.
 
 - Turn them on or off with the **Range icon** and **Feed reminder** checkboxes at the top of the log.
 - The range icon needs **Auto Shot** on one of your action bars to be accurate. Put **Wing Clip** on a bar too and it can tell melee range apart from the dead zone. Hidden bars count.
-- To move them, type `/petlog move`, drag them, and type `/petlog move` again to lock them. The feed reminder can also be Shift-dragged at any time.
+- To move them, press **Unlock icons** at the bottom of the log (or type `/petlog move`), drag them where you want, then press **Lock icons**. The feed reminder can also be Shift-dragged at any time.
+- If you target something and Auto Shot isn't on your bars, the addon tells you once in chat. It does the same for Wing Clip from level 12.
 
 ### Commands
 
 | Command | What it does |
 |---|---|
 | `/petlog` | Open or close the log |
+| `/petlog help` | Open the How to use window |
 | `/petlog uncaught` | Show or hide skins you haven't caught |
 | `/petlog minimap` | Show or hide the minimap button |
 | `/petlog notify` | Turn "new skin" messages on or off |
@@ -66,7 +69,7 @@ To remove a pet from the log, Shift-click **Forget pet**.
 | `/petlog feed` | Turn the feed reminder on or off |
 | `/petlog feed content` / `/petlog feed unhappy` | Remind when the pet is Content or worse (default), or only when Unhappy |
 | `/petlog feed sound` | Turn the reminder sound on or off |
-| `/petlog move` | Unlock the range icon and feed reminder so you can drag them |
+| `/petlog move` | Unlock or lock the range icon and feed reminder (same as the Unlock icons button) |
 | `/petlog scan` | Re-check your current pet |
 | `/petlog unassign <pet name>` | Clear a pet's skin so you can pick it again |
 | `/petlog forget <pet name>` | Remove a saved pet |
@@ -102,9 +105,17 @@ So far the addon has been confirmed to load on Ravencraft, and the log window wo
 15. [ ] With Auto Shot on a bar, targeting a mob shows the range icon. It reads green In range at shooting distance, red Dead zone just outside melee, orange Melee when touching it (needs Wing Clip on a bar), and grey Out of range when far away.
 16. [ ] The range icon hides when you clear your target or the target dies.
 17. [ ] When your pet drops from Happy to Content, the happiness face appears with a chat message and sound. Clicking it starts Feed Pet, and the icon hides while the pet eats and once it's Happy again.
-18. [ ] `/petlog move` lets you drag both icons, and they stay where you put them after `/reload`.
+18. [ ] **Unlock icons** lets you drag both icons, and the button then says Lock icons. They stay where you put them after `/reload`.
+19. [ ] The How to use window opens by itself the first time you log in on a hunter (but not on later logins), and again with Help, `/petlog help` or Shift-clicking the minimap icon. All the text fits in the window.
+20. [ ] With Auto Shot removed from your bars, targeting an enemy prints a one-time hint to put it on a bar.
 
 ## Changelog
+
+### 1.3.0
+
+- Added a **How to use** window. It opens on your first hunter login, and afterwards with the Help button, `/petlog help` or Shift-clicking the minimap icon.
+- Added **Unlock icons / Lock icons** buttons for moving the range icon and feed reminder.
+- Added a one-time chat hint when Auto Shot (or Wing Clip, from level 12) isn't on your action bars.
 
 ### 1.2.1
 

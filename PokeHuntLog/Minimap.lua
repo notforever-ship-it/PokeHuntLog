@@ -52,7 +52,9 @@ function HPL.InitMinimapButton()
   border:SetPoint("TOPLEFT", button, "TOPLEFT", 0, 0)
 
   button:SetScript("OnClick", function()
-    if arg1 == "RightButton" then
+    if IsShiftKeyDown() then
+      HPL.ToggleHelp()
+    elseif arg1 == "RightButton" then
       HPL.db.settings.showUncaught = not HPL.db.settings.showUncaught
       HPL.Print("uncaught skins are now " .. (HPL.db.settings.showUncaught and "shown" or "hidden") .. ".")
       HPL.Changed()
@@ -70,6 +72,7 @@ function HPL.InitMinimapButton()
     end
     GameTooltip:AddLine("Left-click: open the log", 0.8, 0.8, 0.8)
     GameTooltip:AddLine("Right-click: show/hide uncaught skins", 0.8, 0.8, 0.8)
+    GameTooltip:AddLine("Shift-click: how to use", 0.8, 0.8, 0.8)
     GameTooltip:AddLine("Drag: move this button", 0.8, 0.8, 0.8)
     GameTooltip:Show()
   end)

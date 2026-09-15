@@ -4,7 +4,7 @@
 PokeHuntLog = {}
 local HPL = PokeHuntLog
 
-HPL.VERSION = "1.2.1"
+HPL.VERSION = "1.3.0"
 HPL.DB_VERSION = 1
 HPL.MAX_LEVEL = 60
 HPL.TAME_BEAST_SPELL_ID = 1515
@@ -159,6 +159,7 @@ local function NewDB()
       feedReminder = true,
       feedWhen = "content",   -- "content": remind as soon as the pet isn't happy; "unhappy": only when unhappy
       feedSound = true,
+      seenHelp = false,
     },
     pets = {},     -- [charKey] = { pet records }
     custom = {},   -- [skinId] = skins discovered in game that aren't in the bundled database
@@ -252,6 +253,8 @@ local function SlashHandler(msg)
     HPL.Print("feed reminder " .. (s.feedReminder and ("on, when your pet is " .. s.feedWhen .. " or worse") or "off") .. ".")
     HPL.UpdateHunterTools()
     if HPL.RefreshUI then HPL.RefreshUI() end
+  elseif cmd == "help" then
+    HPL.ShowHelp()
   elseif cmd == "move" then
     HPL.ToggleMoveIcons()
   elseif cmd == "scan" then
@@ -289,8 +292,9 @@ local function SlashHandler(msg)
       HPL.Print("this deletes your whole pet log. Type '/petlog reset confirm' to do it.")
     end
   else
-    HPL.Print("commands:")
+    HPL.Print("commands (type /petlog help for the how-to window):")
     HPL.Print("/petlog - open or close the log")
+    HPL.Print("/petlog help - how to use PokeHuntLog")
     HPL.Print("/petlog uncaught - show or hide skins you haven't caught")
     HPL.Print("/petlog minimap - show or hide the minimap button")
     HPL.Print("/petlog notify - turn new skin messages on or off")
@@ -323,6 +327,8 @@ loader:SetScript("OnEvent", function()
   HPL.InitTracker()
   HPL.InitMinimapButton()
   HPL.InitHunterTools()
+  -- Class info can be missing this early, so wait a moment before deciding to show the help.
+  HPL.After(6, function() HPL.MaybeShowFirstHelp() end)
 
   SLASH_POKEHUNTLOG1 = "/petlog"
   SLASH_POKEHUNTLOG2 = "/phl"

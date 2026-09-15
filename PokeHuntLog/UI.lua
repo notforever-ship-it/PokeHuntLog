@@ -2,12 +2,12 @@
 
 local HPL = PokeHuntLog
 
-local WIDTH, HEIGHT = 640, 480
+local WIDTH, HEIGHT = 640, 500
 local ROW_HEIGHT, NUM_ROWS, ROW_WIDTH = 18, 20, 318
 local DETAIL_WIDTH = 236
 local MAX_WHERE_LINES = 6
 
-local frame, scroll, detail, emptyText, summaryText, uncaughtCheck, rangeCheck, feedCheck
+local frame, scroll, detail, emptyText, summaryText, uncaughtCheck, rangeCheck, feedCheck, lockButton
 local buttons = {}
 HPL.rows = {}
 HPL.selected = nil      -- { kind = "skin", id = skinId } or { kind = "pet", pet = petRecord, charKey = key }
@@ -475,8 +475,29 @@ local function CreateWindow()
   close:SetScript("OnClick", function() frame:Hide() end)
 
   local credit = frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
-  credit:SetPoint("BOTTOM", frame, "BOTTOM", 0, 20)
+  credit:SetPoint("BOTTOM", frame, "BOTTOM", 0, 24)
   credit:SetText(GREY .. "Made by " .. END .. "|cffabd473stealthzi" .. END)
+
+  lockButton = CreateFrame("Button", "PokeHuntLogLockButton", frame, "UIPanelButtonTemplate")
+  lockButton:SetWidth(110)
+  lockButton:SetHeight(22)
+  lockButton:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", 18, 18)
+  lockButton:SetText(HPL.movingIcons and "Lock icons" or "Unlock icons")
+  lockButton:SetScript("OnClick", function() HPL.ToggleMoveIcons() end)
+  lockButton:SetScript("OnEnter", function()
+    GameTooltip:SetOwner(this, "ANCHOR_TOP")
+    GameTooltip:SetText("Move the range icon and feed reminder")
+    GameTooltip:AddLine("Unlock, drag them where you want, then lock again.", 1, 1, 1, 1)
+    GameTooltip:Show()
+  end)
+  lockButton:SetScript("OnLeave", function() GameTooltip:Hide() end)
+
+  local helpButton = CreateFrame("Button", "PokeHuntLogHelpButton", frame, "UIPanelButtonTemplate")
+  helpButton:SetWidth(110)
+  helpButton:SetHeight(22)
+  helpButton:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -18, 18)
+  helpButton:SetText("Help")
+  helpButton:SetScript("OnClick", function() HPL.ToggleHelp() end)
 
   summaryText = frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
   summaryText:SetPoint("TOPLEFT", frame, "TOPLEFT", 24, -48)
@@ -629,6 +650,12 @@ local function CreateWindow()
     HPL.selected = nil
     HPL.Changed()
   end)
+end
+
+function HPL.UpdateLogLockButton()
+  if lockButton then
+    lockButton:SetText(HPL.movingIcons and "Lock icons" or "Unlock icons")
+  end
 end
 
 function HPL.ToggleWindow()

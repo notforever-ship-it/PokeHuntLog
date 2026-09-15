@@ -35,6 +35,7 @@ local slots = {}
 local slotsDirty = true
 local scanTip
 local lastHappiness
+local warnedAutoShot, warnedWingClip = false, false
 HPL.movingIcons = false
 
 ------------------------------------------------------------------------------------------------
@@ -150,6 +151,13 @@ local function RangeOnUpdate()
     return
   end
   local state = RANGE_STATES[RangeState()]
+  if not slots.autoShot and not warnedAutoShot then
+    warnedAutoShot = true
+    HPL.Print("the range icon needs |cffffffffAuto Shot|r on one of your action bars (any slot). Drag it from your spellbook. See /petlog help.")
+  elseif slots.autoShot and not slots.wingClip and not warnedWingClip and (UnitLevel("player") or 0) >= 12 then
+    warnedWingClip = true
+    HPL.Print("put |cffffffffWing Clip|r on an action bar too, so the range icon can tell melee range from the dead zone.")
+  end
   rangeFrame.label:SetText(state.text)
   SetColor(rangeFrame, state)
   local texture = slots.autoShot and GetActionTexture(slots.autoShot)
@@ -251,11 +259,12 @@ function HPL.ToggleMoveIcons()
   HPL.movingIcons = not HPL.movingIcons
   if rangeFrame then rangeFrame:EnableMouse(HPL.movingIcons) end
   if HPL.movingIcons then
-    HPL.Print("drag the range icon and feed reminder where you want them, then type /petlog move again to lock.")
+    HPL.Print("icons unlocked: drag the range icon and feed reminder where you want them, then press Lock icons.")
   else
-    HPL.Print("icons locked. Type /petlog move to move them again.")
+    HPL.Print("icons locked.")
   end
   HPL.UpdateHunterTools()
+  if HPL.UpdateLockButtons then HPL.UpdateLockButtons() end
 end
 
 function HPL.InitHunterTools()
