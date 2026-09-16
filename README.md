@@ -120,6 +120,10 @@ So far the addon has been confirmed to load on Ravencraft, and the log window wo
 
 ## Changelog
 
+### 1.3.3
+
+- Fixed the debug log repeating the action bar line over and over. Debug messages stay off unless you turn them on with `/petlog debug on`.
+
 ### 1.3.2
 
 - The How to use window no longer pops up when you log in. Open it with the Help button, `/petlog help` or Shift-clicking the minimap icon.

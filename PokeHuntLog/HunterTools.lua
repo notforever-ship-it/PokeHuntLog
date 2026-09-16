@@ -33,6 +33,8 @@ local HAPPINESS = {
 local rangeFrame, feedFrame
 local slots = {}
 local slotsDirty = true
+local lastSlotScan = 0
+local lastSlotResult = ""
 local scanTip
 local lastHappiness
 local warnedAutoShot, warnedWingClip = false, false
@@ -95,6 +97,7 @@ end
 
 local function ScanActionSlots()
   slotsDirty = false
+  lastSlotScan = GetTime()
   slots.autoShot, slots.wingClip = nil, nil
   if not scanTip then
     scanTip = CreateFrame("GameTooltip", "PokeHuntLogScanTooltip", nil, "GameTooltipTemplate")
@@ -113,7 +116,12 @@ local function ScanActionSlots()
       scanTip:Hide()
     end
   end
-  HPL.Debug("action bars: Auto Shot in slot " .. tostring(slots.autoShot) .. ", Wing Clip in slot " .. tostring(slots.wingClip))
+  -- Only mention it when the slots actually changed, or the debug log fills with repeats.
+  local result = tostring(slots.autoShot) .. "/" .. tostring(slots.wingClip)
+  if result ~= lastSlotResult then
+    lastSlotResult = result
+    HPL.Debug("action bars: Auto Shot in slot " .. tostring(slots.autoShot) .. ", Wing Clip in slot " .. tostring(slots.wingClip))
+  end
 end
 
 local function HasAttackableTarget()
@@ -121,7 +129,8 @@ local function HasAttackableTarget()
 end
 
 local function RangeState()
-  if slotsDirty then ScanActionSlots() end
+  -- Rescanning reads 120 tooltips, so wait a second after the bars change.
+  if slotsDirty and GetTime() - lastSlotScan > 1 then ScanActionSlots() end
   if slots.autoShot and IsActionInRange(slots.autoShot) == 1 then
     return "range"
   end
