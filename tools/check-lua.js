@@ -37,6 +37,7 @@ const KNOWN_GLOBALS = new Set((
   "seterrorhandler geterrorhandler _ERRORMESSAGE debugstack GetNumAddOns GetAddOnInfo GetAddOnMetadata GetBuildInfo " +
   "UnitHealthMax UnitManaMax UnitAttackPower UnitDamage UnitAttackSpeed UnitArmor UnitStat GetSpellName " +
   "GetInventorySlotInfo GetInventoryItemCount PetAbandon ChatFontNormal " +
+  "GetPetTrainingPoints GetNumTrainerServices GetTrainerServiceInfo GetTrainerServiceLevelReq " +
   "SUPERWOW_VERSION"
 ).split(/\s+/).filter(Boolean));
 

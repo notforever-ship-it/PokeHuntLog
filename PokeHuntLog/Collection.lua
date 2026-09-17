@@ -7,6 +7,7 @@ HPL.skinByNpcId = {}    -- [npcId] = skinId
 HPL.skinsByName = {}    -- [lowercase creature name] = { skinId, ... }
 HPL.tree = {}           -- ordered: { { name = type, families = { { name = family, skins = { skinId, ... } } } } }
 HPL.skinsByZone = {}    -- [zone] = { skinId, ... }
+HPL.knowsByCreature = {} -- [lowercase creature name] = ability it knows when tamed, e.g. "Claw 2"
 
 -- Petopia calls the family roles Defense, Offense and General; these are the words hunters use.
 HPL.ROLE_LABELS = { ["Defense"] = "Tank", ["Offense"] = "DPS", ["General"] = "Balanced" }
@@ -62,6 +63,9 @@ local function Register(def)
       local key = string.lower(npcName)
       if not HPL.skinsByName[key] then HPL.skinsByName[key] = {} end
       table.insert(HPL.skinsByName[key], def.id)
+      if npcs[i][7] and npcs[i][7] ~= "" then
+        HPL.knowsByCreature[key] = npcs[i][7]
+      end
     end
   end
 end
@@ -75,6 +79,7 @@ function HPL.BuildIndex()
   HPL.skinByNpcId = {}
   HPL.skinsByName = {}
   HPL.skinsByZone = {}
+  HPL.knowsByCreature = {}
 
   local data = PokeHuntLog_Skins or {}
   for i = 1, table.getn(data) do

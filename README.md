@@ -22,6 +22,7 @@ It also adds two hunter helpers:
 - **Pet stats.** Attack power, damage, attack speed, health, armour and stats are recorded for each of your pets, along with the abilities it has learned.
 - **Search** by skin, creature or zone, and **export** your collection as text.
 - **Low ammo warnings** at 200 and 50 shots.
+- **Training panel** showing your pet's unspent training points, what its family can learn, which ability ranks you have unlocked by taming, where to tame the next rank, and what your hunter trainer has waiting.
 - **Feed reminder.** A happiness face pops up when your pet drops to Content (or only at Unhappy, if you prefer), with a chat message and a sound. Click it to cast Feed Pet, then click a food in your bags.
 
 ## Quick start
@@ -82,6 +83,8 @@ To remove a pet from the log, Shift-click **Forget pet**.
 | `/petlog tooltip` | Turn the "new skin" line on beast tooltips on or off |
 | `/petlog ammo` | Turn low ammo warnings on or off |
 | `/petlog export` | Show your collection as text to copy |
+| `/petlog training` | Open the Training panel |
+| `/petlog trainer` | Turn training reminders on or off |
 | `/petlog range` | Turn the range icon on or off |
 | `/petlog feed` | Turn the feed reminder on or off |
 | `/petlog feed content` / `/petlog feed unhappy` | Remind when the pet is Content or worse (default), or only when Unhappy |
@@ -136,8 +139,21 @@ So far the addon has been confirmed to load on Ravencraft, and the log window wo
 29. [ ] Typing in Search filters the list; clearing it restores everything.
 30. [ ] Export shows your collection as text, and Ctrl+C copies it.
 31. [ ] Hovering the feed face gives advice, and low ammo warns once at 200 and once at 50 shots.
+32. [ ] The Training panel shows your pet's training points, what it knows, and what its family can learn.
+33. [ ] After taming a beast, the panel counts the ability rank it knew as unlocked, and points at a beast for the next rank.
+34. [ ] Opening a hunter trainer once fills the Hunter trainer section, and levelling up reminds you when something is ready.
 
 ## Changelog
+
+### 1.6.0
+
+- **Training panel** (the Training button, or `/petlog training`):
+  - your pet's unspent training points, and what it already knows
+  - every ability its family can learn, with the rank it could train now and what that costs
+  - which ranks you have unlocked by taming, and the lowest level beast that knows the next one
+  - what your hunter trainer offered last time you visited, split into ready now and coming up
+- **Reminders** when your pet has unspent training points, and when abilities are waiting at your hunter trainer (`/petlog trainer` to turn off).
+- Pet ability ranks, the pet level each needs and its training point cost are bundled from Petopia.
 
 ### 1.5.0
 

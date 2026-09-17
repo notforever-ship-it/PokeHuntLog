@@ -237,6 +237,7 @@ function HPL.ScanActivePet(source)
     pet = {
       name = name, family = family, ctype = ctype, creature = tame.name, level = level,
       tamedLevel = tame.level, tamed = time(), zone = tame.zone, witnessed = true, guid = guid,
+      knows = HPL.knowsByCreature and HPL.knowsByCreature[string.lower(tame.name or "")] or nil,
       npcId = tame.npcIds and tame.npcIds[1], skin = skin, match = how, lastSeen = time(),
     }
     table.insert(list, pet)

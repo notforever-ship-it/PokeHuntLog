@@ -732,7 +732,7 @@ local function CreateWindow()
   close:SetScript("OnClick", function() frame:Hide() end)
 
   local credit = frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
-  credit:SetPoint("BOTTOM", frame, "BOTTOM", 0, 24)
+  credit:SetPoint("TOP", frame, "TOP", 0, -34)
   credit:SetText(GREY .. "Made by " .. END .. "|cffabd473stealthzi" .. END)
 
   lockButton = CreateFrame("Button", "PokeHuntLogLockButton", frame, "UIPanelButtonTemplate")
@@ -755,6 +755,14 @@ local function CreateWindow()
   collapseButton:SetPoint("LEFT", lockButton, "RIGHT", 8, 0)
   collapseButton:SetText("Collapse all")
   collapseButton:SetScript("OnClick", function() HPL.ToggleCollapseAll() end)
+
+  local trainingButton = CreateFrame("Button", "PokeHuntLogTrainingButton", frame, "UIPanelButtonTemplate")
+  trainingButton:SetWidth(110)
+  trainingButton:SetHeight(22)
+  trainingButton:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -254, 18)
+  trainingButton:SetText("Training")
+  trainingButton:SetScript("OnClick", function() HPL.ToggleTraining() end)
+  Explain(trainingButton, "Training", "Training points, what your pet can learn, and what your hunter trainer has waiting.")
 
   local exportButton = CreateFrame("Button", "PokeHuntLogExportButton", frame, "UIPanelButtonTemplate")
   exportButton:SetWidth(110)

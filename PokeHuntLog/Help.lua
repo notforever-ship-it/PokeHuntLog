@@ -31,6 +31,12 @@ local HELP_TEXT = table.concat({
     GREY .. "Out of range" .. END,
   "- Without Wing Clip (learned at level 12) it can only say " .. RED .. "Too close" .. END .. ".",
   " ",
+  GOLD .. "Training" .. END,
+  "- " .. WHITE .. "Training" .. END .. " shows your pet's unspent training points, what its family can learn, " ..
+    "which ranks you have unlocked by taming, and where to tame the next one.",
+  "- Taming a beast unlocks the ability rank it knows; a pet trainer then teaches it to any of your pets.",
+  "- Visit a hunter trainer once and the log remembers what it offers, then tells you when something is ready.",
+  " ",
   GOLD .. "Roles" .. END,
   "- " .. WHITE .. "Tank" .. END .. " takes hits, " .. WHITE .. "DPS" .. END .. " deals damage, " ..
     WHITE .. "Balanced" .. END .. " is in between, and gorillas are " .. WHITE .. "AoE tank" .. END ..
@@ -54,6 +60,7 @@ local HELP_TEXT = table.concat({
   WHITE .. "/petlog uncaught" .. END .. " - show or hide skins you haven't caught",
   WHITE .. "/petlog tooltip" .. END .. " - turn the beast tooltip line on or off",
   WHITE .. "/petlog export" .. END .. " - collection as text     " .. WHITE .. "/petlog ammo" .. END .. " - ammo warnings on/off",
+  WHITE .. "/petlog training" .. END .. " - the training panel     " .. WHITE .. "/petlog trainer" .. END .. " - reminders on/off",
   WHITE .. "/petlog commands" .. END .. " - list every command in chat",
   WHITE .. "/petlog debug on" .. END .. " - show what the addon notices in chat (handy for bug reports)",
 }, "\n")
