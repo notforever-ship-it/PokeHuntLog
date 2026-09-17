@@ -1,4 +1,4 @@
-// Builds PokeHuntLog/Data/Abilities.lua from Petopia Classic's pet abilities page.
+// Builds Data/Abilities.lua from Petopia Classic's pet abilities page.
 // Each ability gets its ranks as { rank, pet level needed, training point cost }.
 // Usage: node tools/build-abilities.js   (page is cached in tools/cache)
 
@@ -7,7 +7,7 @@ const path = require("path");
 
 const ROOT = path.resolve(__dirname, "..");
 const CACHE = path.join(__dirname, "cache");
-const OUT = path.join(ROOT, "PokeHuntLog", "Data", "Abilities.lua");
+const OUT = path.join(ROOT, "Data", "Abilities.lua");
 const URL = "https://www.wow-petopia.com/classic/abilities.php";
 
 function decode(s) {

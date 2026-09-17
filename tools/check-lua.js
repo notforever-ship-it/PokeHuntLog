@@ -3,7 +3,7 @@
 // - Rejects 5.1+ syntax: '#', '%', '...' used as an expression, [=[ long brackets ]=].
 // - Flags 5.1+/later-client library calls (string.match, select, ...).
 // - Lists global names read but never defined by the addon or on the known-API list.
-// Usage: node tools/check-lua.js [dir]   (default: PokeHuntLog)
+// Usage: node tools/check-lua.js [dir]   (default: the repo root, where the addon files live)
 
 const fs = require("fs");
 const path = require("path");
@@ -356,11 +356,14 @@ class Parser {
 }
 
 function main() {
-  const root = path.resolve(process.argv[2] || path.join(__dirname, "..", "PokeHuntLog"));
+  const root = path.resolve(process.argv[2] || path.join(__dirname, ".."));
   const files = [];
   const walk = (d) => fs.readdirSync(d, { withFileTypes: true }).forEach((e) => {
     const p = path.join(d, e.name);
-    if (e.isDirectory()) walk(p); else if (e.name.endsWith(".lua")) files.push(p);
+    if (e.isDirectory()) {
+      if (e.name === "tools" || e.name === ".git" || e.name === ".planning") return;
+      walk(p);
+    } else if (e.name.endsWith(".lua")) files.push(p);
   });
   walk(root);
 

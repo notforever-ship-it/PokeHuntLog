@@ -1,4 +1,4 @@
-// Builds PokeHuntLog/Data/Skins.lua and PokeHuntLog/Data/Families.lua from Petopia Classic
+// Builds Data/Skins.lua and Data/Families.lua from Petopia Classic
 // (https://www.wow-petopia.com/classic/). Only factual data is kept: skin and creature names, NPC ids,
 // levels, zones, rare/elite tags, attack speeds, family roles, stat modifiers, abilities and diets.
 // Usage: node tools/build-skins.js   (pages are cached in tools/cache, delete it to refetch)
@@ -8,8 +8,8 @@ const path = require("path");
 
 const ROOT = path.resolve(__dirname, "..");
 const CACHE = path.join(__dirname, "cache");
-const OUT_SKINS = path.join(ROOT, "PokeHuntLog", "Data", "Skins.lua");
-const OUT_FAMILIES = path.join(ROOT, "PokeHuntLog", "Data", "Families.lua");
+const OUT_SKINS = path.join(ROOT, "Data", "Skins.lua");
+const OUT_FAMILIES = path.join(ROOT, "Data", "Families.lua");
 const BASE = "https://www.wow-petopia.com/classic/";
 
 // Petopia family slug -> in-game UnitCreatureFamily() name
