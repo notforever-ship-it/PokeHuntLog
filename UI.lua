@@ -573,7 +573,7 @@ end
 -- Your collection as plain text, for pasting somewhere else.
 function HPL.ExportText()
   local lines = {}
-  table.insert(lines, "PokeHuntLog: " .. HPL.totals.caught .. "/" .. HPL.totals.skins .. " skins (" ..
+  table.insert(lines, "PokeHuntLog v" .. HPL.VERSION .. ": " .. HPL.totals.caught .. "/" .. HPL.totals.skins .. " skins (" ..
     HPL.Percent(HPL.totals.caught, HPL.totals.skins) .. "%), " .. HPL.db.stats.tames .. " tames logged")
   for i = 1, table.getn(HPL.tree) do
     local t = HPL.tree[i]
