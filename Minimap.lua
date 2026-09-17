@@ -68,6 +68,7 @@ function HPL.InitMinimapButton()
   button:SetScript("OnEnter", function()
     GameTooltip:SetOwner(this, "ANCHOR_LEFT")
     GameTooltip:SetText("PokeHuntLog")
+    GameTooltip:AddLine("version " .. HPL.VERSION, 0.6, 0.6, 0.6)
     if HPL.totals then
       GameTooltip:AddLine("Skins: " .. HPL.totals.caught .. " / " .. HPL.totals.skins, 1, 1, 1)
     end
