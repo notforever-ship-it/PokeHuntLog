@@ -17,8 +17,9 @@ local ORANGE = "|cffff9933"
 local WHITE = "|cffffffff"
 local END = "|r"
 
-local frame, panelText
+local frame, panelText, viewButton, child
 local remindedLevel, remindedPoints = nil, nil
+HPL.trainingView = "pet"   -- "pet" or "abilities"
 
 -- "Claw 2" -> "Claw", 2
 local function SplitRank(text)
@@ -38,32 +39,34 @@ function HPL.UnlockedRanks()
       if not knows and pet.creature and HPL.knowsByCreature then
         knows = HPL.knowsByCreature[string.lower(pet.creature)]
       end
-      local name, rank = SplitRank(knows)
-      if name and (not unlocked[name] or unlocked[name] < rank) then
-        unlocked[name] = rank
+      local taught = HPL.ParseKnows(knows)
+      for t = 1, table.getn(taught) do
+        local name, rank = taught[t].name, taught[t].rank
+        if not unlocked[name] or unlocked[name] < rank then
+          unlocked[name] = rank
+        end
       end
     end
   end
   return unlocked
 end
 
--- The lowest level beast that knows this ability rank, so you know where to go unlock it.
+-- Beasts that teach an ability rank, lowest level first.
+function HPL.TeachersFor(abilityName, rank)
+  local list = HPL.teachers and HPL.teachers[string.lower(abilityName) .. " " .. rank]
+  if not list then return {} end
+  local copy = {}
+  for i = 1, table.getn(list) do copy[i] = list[i] end
+  table.sort(copy, function(a, b) return a.lowLevel < b.lowLevel end)
+  return copy
+end
+
+-- The lowest level beast that teaches this rank.
 function HPL.WhereToUnlock(abilityName, rank)
-  local want = string.lower(abilityName .. " " .. rank)
-  local best
-  for id, def in pairs(HPL.skinsById) do
-    local npcs = def.npcs or {}
-    for i = 1, table.getn(npcs) do
-      local knows = npcs[i][7]
-      if knows and string.lower(knows) == want then
-        local low = tonumber(string.sub(npcs[i][3] or "", 1, 2)) or 0
-        if not best or low < best.low then
-          best = { npc = npcs[i], low = low, skin = def }
-        end
-      end
-    end
-  end
-  return best
+  local teachers = HPL.TeachersFor(abilityName, rank)
+  if table.getn(teachers) == 0 then return nil end
+  local first = teachers[1]
+  return { npc = { 0, first.name, first.level, first.zone, first.tag }, low = first.lowLevel }
 end
 
 local function PetPoints()
@@ -228,6 +231,59 @@ function HPL.TrainingText()
   return table.concat(lines, "\n")
 end
 
+
+-- Every pet ability, its ranks, and the beasts that teach each rank.
+function HPL.AbilitiesText()
+  local lines = {}
+  local function Line(text) table.insert(lines, text) end
+  local unlocked = HPL.UnlockedRanks()
+  local playerLevel = UnitLevel("player") or 0
+
+  Line(GREY .. "Taming a beast unlocks the ability rank it knows. A pet trainer then teaches it to any of " ..
+    "your pets, for training points." .. END)
+  Line(" ")
+
+  local names = {}
+  for ability in pairs(PokeHuntLog_Abilities or {}) do table.insert(names, ability) end
+  table.sort(names)
+
+  for n = 1, table.getn(names) do
+    local ability = names[n]
+    local ranks = PokeHuntLog_Abilities[ability]
+    local families = HPL.FamiliesWithAbility(ability)
+    local have = unlocked[ability] or 0
+    Line(GOLD .. ability .. END .. GREY .. "   " .. table.concat(families, ", ") .. END)
+    for r = 1, table.getn(ranks) do
+      local rank, level, cost = ranks[r][1], ranks[r][2], ranks[r][3]
+      local head = "  " .. WHITE .. "rank " .. rank .. END .. GREY .. "  pet level " .. level ..
+        ", " .. cost .. " TP" .. END
+      if have >= rank then
+        Line(head .. GREEN .. "  unlocked" .. END)
+      else
+        local teachers = HPL.TeachersFor(ability, rank)
+        if table.getn(teachers) == 0 then
+          Line(head .. GREY .. "  no beast in the list teaches this" .. END)
+        else
+          local first = teachers[1]
+          local more = ""
+          if table.getn(teachers) > 1 then
+            more = GREY .. " +" .. (table.getn(teachers) - 1) .. " more" .. END
+          end
+          local mark = ""
+          if first.lowLevel > 0 and first.lowLevel <= playerLevel then
+            mark = GREEN .. " tameable now" .. END
+          end
+          Line(head .. "  " .. WHITE .. first.name .. END .. GREY .. " (" .. first.level .. ", " ..
+            first.zone .. ")" .. END .. mark .. more)
+        end
+      end
+    end
+    Line(" ")
+  end
+
+  return table.concat(lines, "\n")
+end
+
 ------------------------------------------------------------------------------------------------
 -- Panel and reminders
 ------------------------------------------------------------------------------------------------
@@ -267,9 +323,9 @@ local function CreatePanel()
   local scroll = CreateFrame("ScrollFrame", "PokeHuntLogTrainingScroll", frame, "UIPanelScrollFrameTemplate")
   scroll:SetPoint("TOPLEFT", frame, "TOPLEFT", 24, -68)
   scroll:SetWidth(390)
-  scroll:SetHeight(424)
+  scroll:SetHeight(392)
 
-  local child = CreateFrame("Frame", "PokeHuntLogTrainingChild", scroll)
+  child = CreateFrame("Frame", "PokeHuntLogTrainingChild", scroll)
   child:SetWidth(390)
   child:SetHeight(1200)
   scroll:SetScrollChild(child)
@@ -279,12 +335,37 @@ local function CreatePanel()
   panelText:SetWidth(384)
   panelText:SetJustifyH("LEFT")
   panelText:SetJustifyV("TOP")
+
+  viewButton = CreateFrame("Button", "PokeHuntLogTrainingViewButton", frame, "UIPanelButtonTemplate")
+  viewButton:SetWidth(130)
+  viewButton:SetHeight(22)
+  viewButton:SetPoint("BOTTOM", frame, "BOTTOM", 0, 18)
+  viewButton:SetScript("OnClick", function()
+    if HPL.trainingView == "pet" then HPL.trainingView = "abilities" else HPL.trainingView = "pet" end
+    HPL.ShowTraining()
+  end)
+end
+
+-- The panel holds either view; the scroll child grows to fit whichever is showing.
+local function FillPanel()
+  local text, lineCount
+  if HPL.trainingView == "abilities" then
+    text = HPL.AbilitiesText()
+    viewButton:SetText("Show my pet")
+  else
+    text = HPL.TrainingText()
+    viewButton:SetText("All abilities")
+  end
+  panelText:SetText(text)
+  lineCount = 1
+  for _ in string.gfind(text, "\n") do lineCount = lineCount + 1 end
+  child:SetHeight(math.max(400, lineCount * 14 + 40))
 end
 
 function HPL.ShowTraining()
   if not HPL.db then return end
   if not frame then CreatePanel() end
-  panelText:SetText(HPL.TrainingText())
+  FillPanel()
   frame:Show()
 end
 
@@ -334,7 +415,7 @@ function HPL.InitTraining()
       HPL.After(4, function() HPL.TrainingReminder() end)
     end
     if frame and frame:IsShown() then
-      panelText:SetText(HPL.TrainingText())
+      FillPanel()
     end
   end)
 end

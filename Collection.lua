@@ -7,7 +7,31 @@ HPL.skinByNpcId = {}    -- [npcId] = skinId
 HPL.skinsByName = {}    -- [lowercase creature name] = { skinId, ... }
 HPL.tree = {}           -- ordered: { { name = type, families = { { name = family, skins = { skinId, ... } } } } }
 HPL.skinsByZone = {}    -- [zone] = { skinId, ... }
-HPL.knowsByCreature = {} -- [lowercase creature name] = ability it knows when tamed, e.g. "Claw 2"
+HPL.knowsByCreature = {} -- [lowercase creature name] = abilities it knows when tamed, e.g. "Bite 2 , Dash 1"
+HPL.teachers = {}       -- ["bite 2"] = { { name, level, zone, lowLevel }, ... }, who can teach that rank
+
+-- A creature can teach more than one ability: "Bite 2 , Furious Howl 1". Returns { {name, rank}, ... }.
+function HPL.ParseKnows(text)
+  local out = {}
+  if not text or text == "" then return out end
+  local rest = text
+  while rest and rest ~= "" do
+    local comma = string.find(rest, ",", 1, true)
+    local piece
+    if comma then
+      piece = string.sub(rest, 1, comma - 1)
+      rest = string.sub(rest, comma + 1)
+    else
+      piece = rest
+      rest = ""
+    end
+    local _, _, name, rank = string.find(piece, "^%s*(.-)%s+(%d+)%s*$")
+    if name and name ~= "" then
+      table.insert(out, { name = name, rank = tonumber(rank) })
+    end
+  end
+  return out
+end
 
 -- Petopia calls the family roles Defense, Offense and General; these are the words hunters use.
 HPL.ROLE_LABELS = { ["Defense"] = "Tank", ["Offense"] = "DPS", ["General"] = "Balanced" }
@@ -65,6 +89,15 @@ local function Register(def)
       table.insert(HPL.skinsByName[key], def.id)
       if npcs[i][7] and npcs[i][7] ~= "" then
         HPL.knowsByCreature[key] = npcs[i][7]
+        local taught = HPL.ParseKnows(npcs[i][7])
+        for t = 1, table.getn(taught) do
+          local slot = string.lower(taught[t].name) .. " " .. taught[t].rank
+          if not HPL.teachers[slot] then HPL.teachers[slot] = {} end
+          table.insert(HPL.teachers[slot], {
+            name = npcName, level = npcs[i][3], zone = npcs[i][4], tag = npcs[i][5],
+            lowLevel = tonumber(string.sub(npcs[i][3] or "", 1, 2)) or 0,
+          })
+        end
       end
     end
   end
@@ -80,6 +113,7 @@ function HPL.BuildIndex()
   HPL.skinsByName = {}
   HPL.skinsByZone = {}
   HPL.knowsByCreature = {}
+  HPL.teachers = {}
 
   local data = PokeHuntLog_Skins or {}
   for i = 1, table.getn(data) do
@@ -244,6 +278,22 @@ function HPL.RebuildCollection()
   HPL.totals = totals
   HPL.familyStats = familyStats
   HPL.typeStats = typeStats
+end
+
+-- Which families can learn an ability, from the family data.
+function HPL.FamiliesWithAbility(ability)
+  local families = {}
+  if not PokeHuntLog_Families then return families end
+  for name, info in pairs(PokeHuntLog_Families) do
+    local lists = { info.abilities or {}, info.passives or {} }
+    for l = 1, 2 do
+      for i = 1, table.getn(lists[l]) do
+        if lists[l][i] == ability then table.insert(families, name) end
+      end
+    end
+  end
+  table.sort(families)
+  return families
 end
 
 -- How many skins of the zone you are standing in are still missing.
