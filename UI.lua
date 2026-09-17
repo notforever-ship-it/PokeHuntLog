@@ -22,6 +22,7 @@ local END = "|r"
 
 local function Backdrop(f, dialog)
   if dialog then
+    HPL.Opaque(f, 11)
     f:SetBackdrop({
       bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
       edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
@@ -35,7 +36,7 @@ local function Backdrop(f, dialog)
       tile = true, tileSize = 16, edgeSize = 16,
       insets = { left = 4, right = 4, top = 4, bottom = 4 },
     })
-    f:SetBackdropColor(0, 0, 0, 0.6)
+    f:SetBackdropColor(0, 0, 0, 0.92)
     f:SetBackdropBorderColor(0.6, 0.6, 0.6, 1)
   end
 end
@@ -79,7 +80,9 @@ function HPL.BuildRows()
     local typeVisible = s.showUncaught or ts.caught > 0 or assigningFamily
     if typeVisible then
       local tkey = "t:" .. t.name
-      table.insert(rows, { kind = "type", key = tkey, name = t.name, caught = ts.caught, total = ts.skins })
+      -- A search builds the families into a holding table first, so a family with no hit is dropped
+      -- instead of showing an empty row.
+      local body = {}
       if not collapsed[tkey] or needle then
         for j = 1, table.getn(t.families) do
           local f = t.families[j]
@@ -87,19 +90,29 @@ function HPL.BuildRows()
           local picking = assigningFamily == f.name
           if s.showUncaught or fs.caught > 0 or picking then
             local fkey = "f:" .. t.name .. "/" .. f.name
-            table.insert(rows, { kind = "family", key = fkey, name = f.name, caught = fs.caught, total = fs.skins,
-              best = fs.bestLevel })
+            local skinRows = {}
             if not collapsed[fkey] or picking or needle then
               for k = 1, table.getn(f.skins) do
                 local id = f.skins[k]
                 if (HPL.caught[id] or s.showUncaught or picking or needle) and
                   (not needle or SkinMatches(HPL.skinsById[id], needle)) then
-                  table.insert(rows, { kind = "skin", id = id })
+                  table.insert(skinRows, { kind = "skin", id = id })
                 end
               end
             end
+            if not needle or table.getn(skinRows) > 0 then
+              table.insert(body, { kind = "family", key = fkey, name = f.name, caught = fs.caught,
+                total = fs.skins, best = fs.bestLevel, forced = (needle or picking) and true or nil,
+                hits = table.getn(skinRows) })
+              for k = 1, table.getn(skinRows) do table.insert(body, skinRows[k]) end
+            end
           end
         end
+      end
+      if not needle or table.getn(body) > 0 then
+        table.insert(rows, { kind = "type", key = tkey, name = t.name, caught = ts.caught,
+          total = ts.skins, forced = needle and true or nil })
+        for j = 1, table.getn(body) do table.insert(rows, body[j]) end
       end
     end
   end
@@ -144,7 +157,7 @@ function HPL.UpdateList()
       btn.icon:SetVertexColor(1, 1, 1)
 
       if r.kind == "type" or r.kind == "header" then
-        expand = collapsed[r.key] and "+" or "-"
+        expand = (collapsed[r.key] and not r.forced) and "+" or "-"
         if r.kind == "type" then
           label = GOLD .. r.name .. END
           right = WHITE .. r.caught .. END .. GREY .. " / " .. r.total .. END
@@ -154,7 +167,7 @@ function HPL.UpdateList()
         end
       elseif r.kind == "family" then
         indent = 12
-        expand = collapsed[r.key] and "+" or "-"
+        expand = (collapsed[r.key] and not r.forced) and "+" or "-"
         iconPath = HPL.FamilyIcon(r.name)
         label = (r.caught > 0 and WHITE or GREY) .. r.name .. END
         local role = HPL.FamilyRole(r.name)
@@ -325,7 +338,7 @@ function HPL.RowTooltip(btn)
     local c = HPL.caught[r.id]
     GameTooltip:SetText(def.name)
     local sub = def.family
-    if def.model and def.model ~= def.family then sub = sub .. " - " .. def.model end
+    if HPL.ModelLabel(def) then sub = sub .. " - " .. HPL.ModelLabel(def) end
     GameTooltip:AddLine(sub, 0.8, 0.8, 0.8)
     if c then
       GameTooltip:AddLine("Caught. Best level " .. c.maxLevel .. " (" .. tostring(c.maxPet) .. ")", 0.25, 1, 0.25)
@@ -387,7 +400,7 @@ end
 local function SkinText(def)
   local c = HPL.caught[def.id]
   local lines = {}
-  local modelName = def.model and def.model ~= def.family and (" - " .. def.model) or ""
+  local modelName = HPL.ModelLabel(def) and (" - " .. HPL.ModelLabel(def)) or ""
   Line(lines, GREY .. def.type .. " / " .. def.family .. modelName .. END)
   if def.custom then
     Line(lines, ORANGE .. "Found in game (not in the skin database)" .. END)

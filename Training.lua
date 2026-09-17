@@ -88,7 +88,7 @@ local function PetKnows()
 end
 
 ------------------------------------------------------------------------------------------------
--- Hunter trainer: remembered from the last visit
+-- Pet trainer: remembered from the last visit
 ------------------------------------------------------------------------------------------------
 
 local function ScanTrainer()
@@ -207,10 +207,10 @@ function HPL.TrainingText()
   end
 
   Line(" ")
-  Line(GOLD .. "Hunter trainer" .. END)
+  Line(GOLD .. "Pet trainer" .. END)
   local ready, later, record = TrainerReady()
   if not record then
-    Line(GREY .. "Visit a hunter trainer once and the log will remember what it offers." .. END)
+    Line(GREY .. "Visit a pet trainer once and the log will remember what it offers." .. END)
   else
     Line(GREY .. "Seen " .. HPL.FormatDate(record.when) .. (record.zone and (" in " .. record.zone) or "") .. END)
     if table.getn(ready) > 0 then
@@ -252,22 +252,29 @@ function HPL.AbilitiesText()
     local ranks = PokeHuntLog_Abilities[ability]
     local families = HPL.FamiliesWithAbility(ability)
     local have = unlocked[ability] or 0
-    Line(GOLD .. ability .. END .. GREY .. "   " .. table.concat(families, ", ") .. END)
+    local fromTrainer = HPL.TRAINER_ABILITIES[ability]
+    local head = GOLD .. ability .. END
+    if fromTrainer then head = head .. GREEN .. "   any pet trainer teaches this" .. END end
+    Line(head .. GREY .. "   " .. table.concat(families, ", ") .. END)
     for r = 1, table.getn(ranks) do
       local rank, level, cost = ranks[r][1], ranks[r][2], ranks[r][3]
-      local head = "  " .. WHITE .. "rank " .. rank .. END .. GREY .. "  pet level " .. level ..
+      local head = "  " .. WHITE .. "rank " .. rank .. END .. GREY .. "  pet lvl " .. level ..
         ", " .. cost .. " TP" .. END
       if have >= rank then
         Line(head .. GREEN .. "  unlocked" .. END)
       else
         local teachers = HPL.TeachersFor(ability, rank)
         if table.getn(teachers) == 0 then
-          Line(head .. GREY .. "  no beast in the list teaches this" .. END)
+          if fromTrainer then
+            Line(head .. GREY .. "  buy it from a pet trainer" .. END)
+          else
+            Line(head .. GREY .. "  no beast in the list teaches this" .. END)
+          end
         else
           local first = teachers[1]
           local more = ""
           if table.getn(teachers) > 1 then
-            more = GREY .. " +" .. (table.getn(teachers) - 1) .. " more" .. END
+            more = GREY .. " +" .. (table.getn(teachers) - 1) .. END
           end
           local mark = ""
           if first.lowLevel > 0 and first.lowLevel <= playerLevel then
@@ -290,7 +297,7 @@ end
 
 local function CreatePanel()
   frame = CreateFrame("Frame", "PokeHuntLogTrainingFrame", UIParent)
-  frame:SetWidth(460)
+  frame:SetWidth(620)
   frame:SetHeight(520)
   frame:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
   frame:SetFrameStrata("DIALOG")
@@ -300,6 +307,7 @@ local function CreatePanel()
   frame:RegisterForDrag("LeftButton")
   frame:SetScript("OnDragStart", function() this:StartMoving() end)
   frame:SetScript("OnDragStop", function() this:StopMovingOrSizing() end)
+  HPL.Opaque(frame, 11)
   frame:SetBackdrop({
     bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
     edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
@@ -322,17 +330,17 @@ local function CreatePanel()
 
   local scroll = CreateFrame("ScrollFrame", "PokeHuntLogTrainingScroll", frame, "UIPanelScrollFrameTemplate")
   scroll:SetPoint("TOPLEFT", frame, "TOPLEFT", 24, -68)
-  scroll:SetWidth(390)
+  scroll:SetWidth(550)
   scroll:SetHeight(392)
 
   child = CreateFrame("Frame", "PokeHuntLogTrainingChild", scroll)
-  child:SetWidth(390)
+  child:SetWidth(550)
   child:SetHeight(1200)
   scroll:SetScrollChild(child)
 
   panelText = child:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
   panelText:SetPoint("TOPLEFT", child, "TOPLEFT", 0, 0)
-  panelText:SetWidth(384)
+  panelText:SetWidth(544)
   panelText:SetJustifyH("LEFT")
   panelText:SetJustifyV("TOP")
 
@@ -392,7 +400,7 @@ function HPL.TrainingReminder()
   local ready = TrainerReady()
   if ready and table.getn(ready) > 0 and remindedLevel ~= level then
     remindedLevel = level
-    HPL.Print(table.getn(ready) .. " ability(s) waiting at your hunter trainer: " ..
+    HPL.Print(table.getn(ready) .. " ability(s) waiting at your pet trainer: " ..
       table.concat(ready, ", ") .. ".")
   end
 end

@@ -23,7 +23,7 @@ It also adds two hunter helpers:
 - **Search** by skin, creature or zone, and **export** your collection as text.
 - **Low ammo warnings** at 200 and 50 shots.
 - **Ability list** covering every pet ability: each rank's pet level and training point cost, which families can learn it, and the beasts that teach it.
-- **Training panel** showing your pet's unspent training points, what its family can learn, which ability ranks you have unlocked by taming, where to tame the next rank, and what your hunter trainer has waiting.
+- **Training panel** showing your pet's unspent training points, what its family can learn, which ability ranks you have unlocked by taming, where to tame the next rank, and what your pet trainer has waiting.
 - **Feed reminder.** A happiness face pops up when your pet drops to Content (or only at Unhappy, if you prefer), with a chat message and a sound. Click it to cast Feed Pet, then click a food in your bags.
 
 ## Quick start
@@ -146,11 +146,19 @@ So far the addon has been confirmed to load on Ravencraft, and the log window wo
 31. [ ] Hovering the feed face gives advice, and low ammo warns once at 200 and once at 50 shots.
 32. [ ] The Training panel shows your pet's training points, what it knows, and what its family can learn.
 33. [ ] After taming a beast, the panel counts the ability rank it knew as unlocked, and points at a beast for the next rank.
-34. [ ] Opening a hunter trainer once fills the Hunter trainer section, and levelling up reminds you when something is ready.
+34. [ ] Opening a pet trainer once fills the Pet trainer section, and levelling up reminds you when something is ready.
 35. [ ] The Training panel's All abilities button lists all 21 abilities with their ranks, and the list scrolls to the end without being cut off.
 36. [ ] Taming a beast that teaches two abilities marks both as unlocked.
 
 ## Changelog
+
+### 1.7.1
+
+- Windows are no longer see-through. The 1.12 dialog background art is partly transparent, so the quest tracker and chat were reading straight through the panels.
+- Abilities a pet trainer sells outright (the five resistances, Great Stamina, Natural Armor, Growl) now say so, instead of "no beast in the list teaches this".
+- The Training panel is wider, so ability lines no longer wrap "tameable now" onto a line of its own.
+- Searching hides families with no matching skin, and shows the ones it keeps as expanded.
+- Skins no longer read "Boar - Boars" when the model name is just the family in plural.
 
 ### 1.7.0
 
@@ -167,8 +175,8 @@ So far the addon has been confirmed to load on Ravencraft, and the log window wo
   - your pet's unspent training points, and what it already knows
   - every ability its family can learn, with the rank it could train now and what that costs
   - which ranks you have unlocked by taming, and the lowest level beast that knows the next one
-  - what your hunter trainer offered last time you visited, split into ready now and coming up
-- **Reminders** when your pet has unspent training points, and when abilities are waiting at your hunter trainer (`/petlog trainer` to turn off).
+  - what your pet trainer offered last time you visited, split into ready now and coming up
+- **Reminders** when your pet has unspent training points, and when abilities are waiting at your pet trainer (`/petlog trainer` to turn off).
 - Pet ability ranks, the pet level each needs and its training point cost are bundled from Petopia.
 
 ### 1.5.0

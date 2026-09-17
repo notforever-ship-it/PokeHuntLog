@@ -4,7 +4,7 @@
 PokeHuntLog = {}
 local HPL = PokeHuntLog
 
-HPL.VERSION = "1.7.0"
+HPL.VERSION = "1.7.1"
 HPL.DB_VERSION = 1
 HPL.MAX_LEVEL = 60
 HPL.TAME_BEAST_SPELL_ID = 1515
@@ -80,6 +80,17 @@ end
 function HPL.FormatDate(t)
   if not t then return "?" end
   return date("%d %b %Y", t)
+end
+
+-- The 1.12 dialog background art is partly see-through, so whatever sits behind a window
+-- (quest tracker, chat, the world) reads through the text. A solid layer underneath fixes it.
+function HPL.Opaque(f, pad)
+  if f.phlSolid then return end
+  pad = pad or 11
+  f.phlSolid = f:CreateTexture(nil, "BACKGROUND")
+  f.phlSolid:SetTexture(0.05, 0.05, 0.07, 1)
+  f.phlSolid:SetPoint("TOPLEFT", f, "TOPLEFT", pad, -pad)
+  f.phlSolid:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -pad, pad)
 end
 
 -- Run func once after 'seconds'. Uses one shared frame whose OnUpdate is removed when idle.

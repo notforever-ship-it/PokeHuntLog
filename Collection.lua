@@ -10,6 +10,23 @@ HPL.skinsByZone = {}    -- [zone] = { skinId, ... }
 HPL.knowsByCreature = {} -- [lowercase creature name] = abilities it knows when tamed, e.g. "Bite 2 , Dash 1"
 HPL.teachers = {}       -- ["bite 2"] = { { name, level, zone, lowLevel }, ... }, who can teach that rank
 
+-- Petopia's model name is usually just the family in plural ("Boar" / "Boars"); only worth
+-- showing when it says something the family name does not.
+function HPL.ModelLabel(def)
+  if not def or not def.model or def.model == "" then return nil end
+  if def.model == def.family then return nil end
+  if def.model == def.family .. "s" then return nil end
+  if def.model == def.family .. "es" then return nil end
+  return def.model
+end
+
+-- Pet trainers sell these outright, so no beast teaches them. Everything else is learned by taming.
+HPL.TRAINER_ABILITIES = {
+  ["Arcane Resistance"] = true, ["Fire Resistance"] = true, ["Frost Resistance"] = true,
+  ["Nature Resistance"] = true, ["Shadow Resistance"] = true,
+  ["Great Stamina"] = true, ["Natural Armor"] = true, ["Growl"] = true,
+}
+
 -- A creature can teach more than one ability: "Bite 2 , Furious Howl 1". Returns { {name, rank}, ... }.
 function HPL.ParseKnows(text)
   local out = {}

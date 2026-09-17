@@ -35,7 +35,7 @@ local HELP_TEXT = table.concat({
   "- " .. WHITE .. "Training" .. END .. " shows your pet's unspent training points, what its family can learn, " ..
     "which ranks you have unlocked by taming, and where to tame the next one.",
   "- Taming a beast unlocks the ability rank it knows; a pet trainer then teaches it to any of your pets.",
-  "- Visit a hunter trainer once and the log remembers what it offers, then tells you when something is ready.",
+  "- Visit a pet trainer once and the log remembers what it offers, then tells you when something is ready.",
   "- " .. WHITE .. "All abilities" .. END .. " in the Training panel lists every pet ability, each rank with its pet level and cost, and which beast teaches it.",
   " ",
   GOLD .. "Roles" .. END,
@@ -89,6 +89,7 @@ local function CreateHelp()
   frame:RegisterForDrag("LeftButton")
   frame:SetScript("OnDragStart", function() this:StartMoving() end)
   frame:SetScript("OnDragStop", function() this:StopMovingOrSizing() end)
+  HPL.Opaque(frame, 11)
   frame:SetBackdrop({
     bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
     edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
