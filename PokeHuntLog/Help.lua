@@ -18,6 +18,9 @@ local HELP_TEXT = table.concat({
   "- Tick " .. WHITE .. "Show uncaught" .. END .. " to see every skin and where to tame it.",
   "- Hover a wild beast and its tooltip says " .. GREEN .. "NEW skin!" .. END .. " if you haven't caught that look yet.",
   "- " .. WHITE .. "Collapse all" .. END .. " folds the whole list up; press it again to open it.",
+  "- " .. WHITE .. "Search" .. END .. " filters by skin, creature or zone, for example " .. WHITE .. "durotar" .. END .. ".",
+  "- Hover a family for its role, stat modifiers, abilities and diet. Hover a skin for your best pet's stats.",
+  "- " .. WHITE .. "Export" .. END .. " gives you the whole collection as text to paste into Discord.",
   "- A pet under " .. ORANGE .. "Pets with unknown skin" .. END .. ": click it, press " .. WHITE .. "Assign skin" .. END ..
     ", then click its skin in the list.",
   " ",
@@ -28,8 +31,16 @@ local HELP_TEXT = table.concat({
     GREY .. "Out of range" .. END,
   "- Without Wing Clip (learned at level 12) it can only say " .. RED .. "Too close" .. END .. ".",
   " ",
+  GOLD .. "Roles" .. END,
+  "- " .. WHITE .. "Tank" .. END .. " takes hits, " .. WHITE .. "DPS" .. END .. " deals damage, " ..
+    WHITE .. "Balanced" .. END .. " is in between, and gorillas are " .. WHITE .. "AoE tank" .. END ..
+    " because Thunderstomp grabs everything nearby.",
+  " ",
   GOLD .. "Feed reminder" .. END,
   "- A happiness face pops up when your pet stops being happy. Click it to cast Feed Pet, then click a food in your bags.",
+  "- Hover the face: at " .. WHITE .. "Content" .. END .. " a full meal fits with nothing wasted; at " ..
+    WHITE .. "Happy" .. END .. " most of the food is wasted.",
+  "- You are warned in chat when you are down to 200 and 50 shots.",
   " ",
   GOLD .. "Moving the icons" .. END,
   "- Press " .. WHITE .. "Unlock icons" .. END .. ", drag the range icon and the feed reminder, then press " ..
@@ -42,6 +53,7 @@ local HELP_TEXT = table.concat({
   WHITE .. "/petlog feed unhappy" .. END .. " - only remind when the pet is unhappy",
   WHITE .. "/petlog uncaught" .. END .. " - show or hide skins you haven't caught",
   WHITE .. "/petlog tooltip" .. END .. " - turn the beast tooltip line on or off",
+  WHITE .. "/petlog export" .. END .. " - collection as text     " .. WHITE .. "/petlog ammo" .. END .. " - ammo warnings on/off",
   WHITE .. "/petlog commands" .. END .. " - list every command in chat",
   WHITE .. "/petlog debug on" .. END .. " - show what the addon notices in chat (handy for bug reports)",
 }, "\n")

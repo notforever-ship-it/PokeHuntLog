@@ -6,6 +6,48 @@ HPL.skinsById = {}      -- [skinId] = { id, type, family, model, name, npcs, cus
 HPL.skinByNpcId = {}    -- [npcId] = skinId
 HPL.skinsByName = {}    -- [lowercase creature name] = { skinId, ... }
 HPL.tree = {}           -- ordered: { { name = type, families = { { name = family, skins = { skinId, ... } } } } }
+HPL.skinsByZone = {}    -- [zone] = { skinId, ... }
+
+-- Petopia calls the family roles Defense, Offense and General; these are the words hunters use.
+HPL.ROLE_LABELS = { ["Defense"] = "Tank", ["Offense"] = "DPS", ["General"] = "Balanced" }
+HPL.ROLE_COLORS = {
+  ["Tank"] = "|cff5599ff", ["DPS"] = "|cffff6666", ["Balanced"] = "|cffffd100", ["AoE tank"] = "|cffcc77ff",
+}
+-- An ability that changes what the family is for.
+local ROLE_BY_ABILITY = { ["Thunderstomp"] = "AoE tank" }
+
+-- Short notes on what each trainable ability does.
+HPL.ABILITY_NOTES = {
+  ["Bite"] = "damage",
+  ["Claw"] = "damage",
+  ["Charge"] = "closes the gap and hits harder",
+  ["Cower"] = "drops threat",
+  ["Dash"] = "sprint",
+  ["Dive"] = "sprint",
+  ["Furious Howl"] = "buffs your party melee damage",
+  ["Growl"] = "taunt",
+  ["Lightning Breath"] = "ranged nature damage",
+  ["Prowl"] = "stealth",
+  ["Scorpid Poison"] = "stacking poison",
+  ["Screech"] = "lowers attack power of everything in front",
+  ["Shell Shield"] = "takes much less damage for a while",
+  ["Thunderstomp"] = "damages and grabs everything nearby",
+}
+
+function HPL.FamilyInfo(family)
+  return PokeHuntLog_Families and PokeHuntLog_Families[family] or nil
+end
+
+-- "Tank", "DPS", "Balanced" or "AoE tank"; nil for families that aren't in the database.
+function HPL.FamilyRole(family)
+  local info = HPL.FamilyInfo(family)
+  if not info then return nil end
+  local abilities = info.abilities or {}
+  for i = 1, table.getn(abilities) do
+    if ROLE_BY_ABILITY[abilities[i]] then return ROLE_BY_ABILITY[abilities[i]] end
+  end
+  return HPL.ROLE_LABELS[info.role] or info.role
+end
 
 local function Register(def)
   if HPL.skinsById[def.id] then return end
@@ -32,6 +74,7 @@ function HPL.BuildIndex()
   HPL.skinsById = {}
   HPL.skinByNpcId = {}
   HPL.skinsByName = {}
+  HPL.skinsByZone = {}
 
   local data = PokeHuntLog_Skins or {}
   for i = 1, table.getn(data) do
@@ -61,6 +104,20 @@ function HPL.BuildIndex()
     end
     table.insert(f.skins, def)
   end
+  -- Which skins can be found in which zone, for the "in this zone" counts.
+  for id, def in pairs(HPL.skinsById) do
+    local seen = {}
+    local npcs = def.npcs or {}
+    for i = 1, table.getn(npcs) do
+      local zone = npcs[i][4]
+      if zone and zone ~= "" and not seen[zone] then
+        seen[zone] = true
+        if not HPL.skinsByZone[zone] then HPL.skinsByZone[zone] = {} end
+        table.insert(HPL.skinsByZone[zone], id)
+      end
+    end
+  end
+
   table.sort(typeList, SortByName)
   HPL.tree = {}
   for i = 1, table.getn(typeList) do
@@ -182,6 +239,27 @@ function HPL.RebuildCollection()
   HPL.totals = totals
   HPL.familyStats = familyStats
   HPL.typeStats = typeStats
+end
+
+-- How many skins of the zone you are standing in are still missing.
+function HPL.ZoneProgress(zone)
+  local ids = zone and HPL.skinsByZone[zone]
+  if not ids then return nil end
+  local caught, missing = 0, {}
+  for i = 1, table.getn(ids) do
+    if HPL.caught[ids[i]] then
+      caught = caught + 1
+    else
+      table.insert(missing, ids[i])
+    end
+  end
+  return caught, table.getn(ids), missing
+end
+
+-- Is every skin of this family caught?
+function HPL.FamilyComplete(typeName, family)
+  local stats = HPL.familyStats[typeName .. "/" .. family]
+  return stats and stats.skins > 0 and stats.caught >= stats.skins
 end
 
 function HPL.Percent(part, whole)

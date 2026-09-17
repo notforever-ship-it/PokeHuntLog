@@ -79,6 +79,72 @@ local function FindPet(list, name, family, guid)
   return found
 end
 
+-- Attack power, damage and so on for the pet that is out. Read a couple of seconds after it appears,
+-- because the values are still empty the moment it does.
+local function ReadPetStats()
+  local stats = {}
+  local ok = pcall(function()
+    stats.health = UnitHealthMax("pet")
+    local base, pos, neg = UnitAttackPower("pet")
+    stats.ap = (base or 0) + (pos or 0) + (neg or 0)
+    stats.dmgLow, stats.dmgHigh = UnitDamage("pet")
+    stats.speed = UnitAttackSpeed("pet")
+    local _, armor = UnitArmor("pet")
+    stats.armor = armor
+    local keys = { "str", "agi", "sta", "int", "spi" }
+    for i = 1, 5 do
+      local _, effective = UnitStat("pet", i)
+      stats[keys[i]] = effective
+    end
+    stats.level = UnitLevel("pet")
+    stats.when = time()
+  end)
+  if ok then return stats end
+  return nil
+end
+
+-- What the pet has actually learned, from its spellbook.
+local function ReadPetSpells()
+  local spells = {}
+  local i = 1
+  while i < 40 do
+    local ok, name, rank = pcall(GetSpellName, i, "pet")
+    if not ok or not name then break end
+    if rank and rank ~= "" then name = name .. " " .. rank end
+    table.insert(spells, name)
+    i = i + 1
+  end
+  return spells
+end
+
+function HPL.CapturePetDetails()
+  local pet = HPL.activePet
+  if not pet or not UnitExists("pet") then return end
+  local stats = ReadPetStats()
+  if stats then pet.stats = stats end
+  local spells = ReadPetSpells()
+  if table.getn(spells) > 0 then pet.spells = spells end
+  if HPL.RefreshUI then HPL.RefreshUI() end
+end
+
+local MILESTONES = { 5, 10, 25, 50, 75, 100 }
+
+local function CheckMilestones(pet)
+  local t = HPL.totals
+  for i = 1, table.getn(MILESTONES) do
+    if t.caught == MILESTONES[i] then
+      HPL.Print("|cff00ff00Milestone:|r " .. t.caught .. " skins collected!")
+    end
+  end
+  if t.skins > 0 and t.caught >= t.skins then
+    HPL.Print("|cff00ff00You have caught every skin in the log!|r")
+  end
+  local def = pet.skin and HPL.skinsById[pet.skin]
+  if def and HPL.FamilyComplete(def.type, def.family) then
+    HPL.Print("|cff00ff00Milestone:|r every " .. def.family .. " skin collected!")
+  end
+end
+
 local function Announce(pet, wasCaught)
   if not HPL.db.settings.notify then return end
   local def = pet.skin and HPL.skinsById[pet.skin]
@@ -87,6 +153,7 @@ local function Announce(pet, wasCaught)
     HPL.Print("|cff00ff00New skin collected:|r " .. def.name .. " (" .. def.family .. ")  " ..
       HPL.totals.caught .. "/" .. HPL.totals.skins)
     UIErrorsFrame:AddMessage("New pet skin: " .. def.name, 0.67, 0.83, 0.45, 1.0, 3)
+    CheckMilestones(pet)
   elseif not def then
     HPL.Print(pet.name .. " (" .. tostring(pet.family) .. ") was added, but its skin couldn't be worked out. " ..
       "Open /petlog to pick it.")
@@ -197,6 +264,10 @@ function HPL.ScanActivePet(source)
     if level > (pet.level or 0) then
       HPL.Debug(name .. " level " .. tostring(pet.level) .. " -> " .. level)
       pet.level = level
+      if level >= HPL.MAX_LEVEL and not HPL.db.stats.first60 then
+        HPL.db.stats.first60 = time()
+        HPL.Print("|cff00ff00Milestone:|r " .. name .. " reached level " .. HPL.MAX_LEVEL .. "!")
+      end
     end
     pet.lastSeen = time()
     pet.guid = guid or pet.guid
@@ -204,6 +275,7 @@ function HPL.ScanActivePet(source)
   end
 
   HPL.Changed()
+  HPL.After(2, function() HPL.CapturePetDetails() end)
 end
 
 -- Stabled pets: record levels and pick up pets the log hasn't seen yet.
@@ -318,6 +390,29 @@ function HPL.InitTracker()
       if arg1 == "pet" and HPL.RefreshModel then HPL.RefreshModel() end
     end
   end)
+
+  -- Warn when the pet being abandoned is the only one with its skin.
+  if type(PetAbandon) == "function" then
+    local originalAbandon = PetAbandon
+    PetAbandon = function()
+      local pet = HPL.activePet
+      local def = pet and pet.skin and HPL.skinsById[pet.skin]
+      if def then
+        local caught = HPL.caught[pet.skin]
+        local others = 0
+        if caught then
+          for i = 1, table.getn(caught.pets) do
+            if caught.pets[i].pet ~= pet then others = others + 1 end
+          end
+        end
+        if others == 0 then
+          HPL.Print("|cffff9933" .. tostring(pet.name) .. " was your only " .. def.name ..
+            ". The log keeps the record, but you will have to tame another one to use it again.|r")
+        end
+      end
+      return originalAbandon()
+    end
+  end
 
   -- The rename popup calls PetRename(name); remember the new name so the rename is matched exactly.
   if type(PetRename) == "function" then

@@ -37,7 +37,10 @@ local lastSlotScan = 0
 local lastSlotResult = ""
 local scanTip
 local lastHappiness
+local happinessSince, lastFed = nil, nil
 local warnedAutoShot, warnedWingClip = false, false
+local AMMO_WARN = { 200, 50 }
+local warnedAmmo = {}
 HPL.movingIcons = false
 
 ------------------------------------------------------------------------------------------------
@@ -208,6 +211,42 @@ local function PetIsEating()
   return false
 end
 
+-- The game only tells addons Happy, Content or Unhappy, never the hidden 0-1050 number. What it does
+-- tell us is when that level changes, so the advice is based on how long the pet has been at this level.
+function HPL.FeedAdvice()
+  if not UnitExists("pet") then return nil end
+  local happiness = GetPetHappiness()
+  if not happiness then return nil end
+  local minutes = happinessSince and math.floor((time() - happinessSince) / 60) or nil
+  local since = minutes and (" for " .. minutes .. " min") or ""
+  local fed = lastFed and (" Last fed " .. math.floor((time() - lastFed) / 60) .. " min ago.") or ""
+  if happiness == 3 then
+    return "Happy" .. since .. ". Feeding now would waste most of the food." .. fed
+  elseif happiness == 2 then
+    return "Content" .. since .. ". A full meal fits with nothing wasted." .. fed
+  end
+  return "Unhappy" .. since .. ". Feed it now: it is doing less damage." .. fed
+end
+
+local function CheckAmmo()
+  if not HPL.db or not HPL.db.settings.ammoWarn or not HPL.IsHunter() then return end
+  local slot = GetInventorySlotInfo("AmmoSlot")
+  local count = slot and GetInventoryItemCount("player", slot) or 0
+  if count <= 0 then return end
+  for i = 1, table.getn(AMMO_WARN) do
+    local level = AMMO_WARN[i]
+    if count <= level then
+      if not warnedAmmo[level] then
+        warnedAmmo[level] = true
+        HPL.Print("|cffff9933" .. count .. " shots left.|r")
+        UIErrorsFrame:AddMessage("Low ammo: " .. count .. " left", 1, 0.6, 0.2, 1.0, 3)
+      end
+    else
+      warnedAmmo[level] = nil
+    end
+  end
+end
+
 local function UpdateFeed(fromEvent)
   if not feedFrame then return end
   local s = HPL.db.settings
@@ -234,6 +273,9 @@ local function UpdateFeed(fromEvent)
     feedFrame:Hide()
     return
   end
+
+  if happiness ~= lastHappiness then happinessSince = time() end
+  if PetIsEating() then lastFed = time() end
 
   local remindAt = (s.feedWhen == "unhappy") and 1 or 2
   if happiness <= remindAt and not PetIsEating() then
@@ -298,6 +340,8 @@ function HPL.InitHunterTools()
   feedFrame:SetScript("OnEnter", function()
     GameTooltip:SetOwner(this, "ANCHOR_BOTTOM")
     GameTooltip:SetText("Feed your pet")
+    local advice = HPL.FeedAdvice()
+    if advice then GameTooltip:AddLine(advice, 1, 0.82, 0, 1) end
     GameTooltip:AddLine("Click to cast Feed Pet, then click a food in your bags.", 1, 1, 1, 1)
     GameTooltip:AddLine("Shift-drag to move.", 0.7, 0.7, 0.7)
     GameTooltip:Show()
@@ -306,7 +350,8 @@ function HPL.InitHunterTools()
 
   local f = CreateFrame("Frame")
   local events = { "PLAYER_TARGET_CHANGED", "ACTIONBAR_SLOT_CHANGED", "UNIT_HAPPINESS", "UNIT_PET", "UNIT_AURA",
-    "PLAYER_ENTERING_WORLD", "UNIT_FACTION" }
+    "PLAYER_ENTERING_WORLD", "UNIT_FACTION", "UNIT_INVENTORY_CHANGED", "BAG_UPDATE", "PLAYER_REGEN_ENABLED",
+    "PLAYER_REGEN_DISABLED" }
   for i = 1, table.getn(events) do
     pcall(f.RegisterEvent, f, events[i])
   end
@@ -324,6 +369,9 @@ function HPL.InitHunterTools()
         lastHappiness = nil
         HPL.After(1, function() UpdateFeed(false) end)
       end
+    elseif event == "UNIT_INVENTORY_CHANGED" or event == "BAG_UPDATE" or event == "PLAYER_REGEN_ENABLED" or
+      event == "PLAYER_REGEN_DISABLED" then
+      CheckAmmo()
     elseif event == "PLAYER_ENTERING_WORLD" then
       slotsDirty = true
       HPL.After(2, function() HPL.UpdateHunterTools() end)

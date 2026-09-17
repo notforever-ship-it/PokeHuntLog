@@ -4,7 +4,7 @@
 PokeHuntLog = {}
 local HPL = PokeHuntLog
 
-HPL.VERSION = "1.4.0"
+HPL.VERSION = "1.5.0"
 HPL.DB_VERSION = 1
 HPL.MAX_LEVEL = 60
 HPL.TAME_BEAST_SPELL_ID = 1515
@@ -153,6 +153,7 @@ local function NewDB()
       feedWhen = "content",   -- "content": remind as soon as the pet isn't happy; "unhappy": only when unhappy
       feedSound = true,
       tooltip = true,
+      ammoWarn = true,
     },
     pets = {},     -- [charKey] = { pet records }
     custom = {},   -- [skinId] = skins discovered in game that aren't in the bundled database
@@ -246,6 +247,11 @@ local function SlashHandler(msg)
     HPL.Print("feed reminder " .. (s.feedReminder and ("on, when your pet is " .. s.feedWhen .. " or worse") or "off") .. ".")
     HPL.UpdateHunterTools()
     if HPL.RefreshUI then HPL.RefreshUI() end
+  elseif cmd == "export" then
+    HPL.ShowExport()
+  elseif cmd == "ammo" then
+    HPL.db.settings.ammoWarn = not HPL.db.settings.ammoWarn
+    HPL.Print("low ammo warnings " .. (HPL.db.settings.ammoWarn and "on" or "off") .. ".")
   elseif cmd == "tooltip" then
     HPL.db.settings.tooltip = not HPL.db.settings.tooltip
     HPL.Print("beast tooltips " .. (HPL.db.settings.tooltip and "on" or "off") .. ".")
@@ -295,6 +301,8 @@ local function SlashHandler(msg)
     HPL.Print("/petlog minimap - show or hide the minimap button")
     HPL.Print("/petlog notify - turn new skin messages on or off")
     HPL.Print("/petlog tooltip - turn the \"new skin\" line on beast tooltips on or off")
+    HPL.Print("/petlog ammo - turn low ammo warnings on or off")
+    HPL.Print("/petlog export - copy your collection as text")
     HPL.Print("/petlog range - turn the range icon on or off")
     HPL.Print("/petlog feed - turn the feed reminder on or off")
     HPL.Print("/petlog feed content | unhappy - when the feed reminder shows")

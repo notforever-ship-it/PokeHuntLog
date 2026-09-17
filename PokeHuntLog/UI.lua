@@ -2,12 +2,12 @@
 
 local HPL = PokeHuntLog
 
-local WIDTH, HEIGHT = 640, 500
-local ROW_HEIGHT, NUM_ROWS, ROW_WIDTH = 18, 20, 318
-local DETAIL_WIDTH = 236
+local WIDTH, HEIGHT = 700, 500
+local ROW_HEIGHT, NUM_ROWS, ROW_WIDTH = 18, 20, 340
+local DETAIL_WIDTH = 276
 local MAX_WHERE_LINES = 6
 
-local frame, scroll, detail, emptyText, summaryText, uncaughtCheck, rangeCheck, feedCheck, lockButton
+local frame, scroll, detail, emptyText, summaryText, uncaughtCheck, rangeCheck, feedCheck, lockButton, searchBox
 local buttons = {}
 HPL.rows = {}
 HPL.selected = nil      -- { kind = "skin", id = skinId } or { kind = "pet", pet = petRecord, charKey = key }
@@ -50,11 +50,28 @@ end
 -- Row list
 ------------------------------------------------------------------------------------------------
 
+local function Contains(text, needle)
+  return text and string.find(string.lower(text), needle, 1, true) ~= nil
+end
+
+-- Does this skin match what is typed in the search box? Skin name, family, creature names and zones count.
+local function SkinMatches(def, needle)
+  if Contains(def.name, needle) or Contains(def.family, needle) or Contains(def.model, needle) then
+    return true
+  end
+  local npcs = def.npcs or {}
+  for i = 1, table.getn(npcs) do
+    if Contains(npcs[i][2], needle) or Contains(npcs[i][4], needle) then return true end
+  end
+  return false
+end
+
 function HPL.BuildRows()
   local rows = {}
   local s = HPL.db.settings
   local collapsed = s.collapsed
   local assigningFamily = HPL.assigning and HPL.assigning.family
+  local needle = HPL.search and HPL.search ~= "" and string.lower(HPL.search) or nil
 
   for i = 1, table.getn(HPL.tree) do
     local t = HPL.tree[i]
@@ -63,7 +80,7 @@ function HPL.BuildRows()
     if typeVisible then
       local tkey = "t:" .. t.name
       table.insert(rows, { kind = "type", key = tkey, name = t.name, caught = ts.caught, total = ts.skins })
-      if not collapsed[tkey] then
+      if not collapsed[tkey] or needle then
         for j = 1, table.getn(t.families) do
           local f = t.families[j]
           local fs = HPL.familyStats[t.name .. "/" .. f.name]
@@ -72,10 +89,11 @@ function HPL.BuildRows()
             local fkey = "f:" .. t.name .. "/" .. f.name
             table.insert(rows, { kind = "family", key = fkey, name = f.name, caught = fs.caught, total = fs.skins,
               best = fs.bestLevel })
-            if not collapsed[fkey] or picking then
+            if not collapsed[fkey] or picking or needle then
               for k = 1, table.getn(f.skins) do
                 local id = f.skins[k]
-                if HPL.caught[id] or s.showUncaught or picking then
+                if (HPL.caught[id] or s.showUncaught or picking or needle) and
+                  (not needle or SkinMatches(HPL.skinsById[id], needle)) then
                   table.insert(rows, { kind = "skin", id = id })
                 end
               end
@@ -139,6 +157,10 @@ function HPL.UpdateList()
         expand = collapsed[r.key] and "+" or "-"
         iconPath = HPL.FamilyIcon(r.name)
         label = (r.caught > 0 and WHITE or GREY) .. r.name .. END
+        local role = HPL.FamilyRole(r.name)
+        if role then
+          label = label .. "  " .. (HPL.ROLE_COLORS[role] or GREY) .. role .. END
+        end
         right = WHITE .. r.caught .. END .. GREY .. "/" .. r.total .. END
         if r.best > 0 then
           right = right .. GREY .. "  best " .. END .. LevelText(r.best)
@@ -229,6 +251,103 @@ local function Line(lines, text)
   table.insert(lines, text)
 end
 
+local function StatsText(stats)
+  if not stats then return nil end
+  local parts = {}
+  if stats.ap then table.insert(parts, "AP " .. math.floor(stats.ap)) end
+  if stats.dmgLow and stats.dmgHigh then
+    table.insert(parts, "dmg " .. math.floor(stats.dmgLow) .. "-" .. math.floor(stats.dmgHigh))
+  end
+  if stats.speed and stats.speed > 0 then table.insert(parts, "speed " .. string.format("%.1f", stats.speed)) end
+  if stats.health then table.insert(parts, math.floor(stats.health) .. " hp") end
+  if stats.armor then table.insert(parts, math.floor(stats.armor) .. " armour") end
+  if table.getn(parts) == 0 then return nil end
+  return table.concat(parts, ", ")
+end
+
+local function StatsLine2(stats)
+  if not stats or not stats.sta then return nil end
+  return "str " .. math.floor(stats.str or 0) .. ", agi " .. math.floor(stats.agi or 0) ..
+    ", sta " .. math.floor(stats.sta or 0)
+end
+
+-- The best pet of this skin that has stats recorded.
+local function BestPetWithStats(caught)
+  local best
+  for i = 1, table.getn(caught.pets) do
+    local pet = caught.pets[i].pet
+    if pet.stats and (not best or (pet.level or 0) >= (best.level or 0)) then best = pet end
+  end
+  return best
+end
+
+-- One "where to tame" line: creature, level, rare or elite tag, fast attack speed, zone.
+local function NpcLine(npc)
+  local playerLevel = UnitLevel("player") or 0
+  local low = tonumber(string.sub(npc[3] or "", 1, 2)) or 0
+  local extra = ""
+  if npc[3] and npc[3] ~= "" then extra = extra .. " " .. npc[3] end
+  if npc[5] and npc[5] ~= "" then extra = extra .. " " .. npc[5] end
+  if npc[6] and npc[6] > 0 and npc[6] < 2 then
+    extra = extra .. " " .. string.format("%.1f", npc[6]) .. "s"
+  end
+  local line = WHITE .. tostring(npc[2]) .. END .. GREY .. extra .. "  " .. tostring(npc[4]) .. END
+  if low > 0 and low <= playerLevel then
+    line = line .. GREEN .. "  tameable now" .. END
+  end
+  return line
+end
+
+-- Tooltip shown when hovering a row in the list.
+function HPL.RowTooltip(btn)
+  local r = btn.entry
+  if not r then return end
+  GameTooltip:SetOwner(btn, "ANCHOR_RIGHT")
+  if r.kind == "family" then
+    local info = HPL.FamilyInfo(r.name)
+    local role = HPL.FamilyRole(r.name)
+    GameTooltip:SetText(r.name .. (role and ("  -  " .. role) or ""))
+    if info then
+      GameTooltip:AddLine("Health " .. math.floor(info.health * 100) .. "%, armour " ..
+        math.floor(info.armor * 100) .. "%, damage " .. math.floor(info.damage * 100) .. "%", 1, 1, 1)
+      local abilities = info.abilities or {}
+      for i = 1, table.getn(abilities) do
+        local note = HPL.ABILITY_NOTES[abilities[i]]
+        GameTooltip:AddLine(abilities[i] .. (note and (" - " .. note) or ""), 0.8, 0.8, 0.8)
+      end
+      if info.diet and table.getn(info.diet) > 0 then
+        GameTooltip:AddLine("Eats: " .. table.concat(info.diet, ", "), 0.6, 0.85, 0.6)
+      end
+    end
+    GameTooltip:AddLine(r.caught .. " of " .. r.total .. " skins caught", 1, 0.82, 0)
+  elseif r.kind == "skin" then
+    local def = HPL.skinsById[r.id]
+    local c = HPL.caught[r.id]
+    GameTooltip:SetText(def.name)
+    local sub = def.family
+    if def.model and def.model ~= def.family then sub = sub .. " - " .. def.model end
+    GameTooltip:AddLine(sub, 0.8, 0.8, 0.8)
+    if c then
+      GameTooltip:AddLine("Caught. Best level " .. c.maxLevel .. " (" .. tostring(c.maxPet) .. ")", 0.25, 1, 0.25)
+      local best = BestPetWithStats(c)
+      local stats = best and StatsText(best.stats)
+      if stats then GameTooltip:AddLine(stats, 1, 1, 1) end
+    else
+      GameTooltip:AddLine("Not caught yet", 0.7, 0.7, 0.7)
+    end
+    GameTooltip:AddLine(table.getn(def.npcs or {}) .. " creatures have this look", 0.6, 0.6, 0.6)
+  elseif r.kind == "pet" then
+    GameTooltip:SetText(tostring(r.pet.name))
+    if r.pet.creature then GameTooltip:AddLine("Tamed from " .. r.pet.creature, 0.8, 0.8, 0.8) end
+    local stats = StatsText(r.pet.stats)
+    if stats then GameTooltip:AddLine(stats, 1, 1, 1) end
+  else
+    GameTooltip:Hide()
+    return
+  end
+  GameTooltip:Show()
+end
+
 local function OverviewText()
   local t = HPL.totals
   local chars = 0
@@ -240,6 +359,21 @@ local function OverviewText()
   Line(lines, GOLD .. "Tames logged: " .. END .. HPL.db.stats.tames)
   Line(lines, GOLD .. "Highest pet level: " .. END .. (t.bestLevel > 0 and LevelText(t.bestLevel) or "-"))
   Line(lines, GOLD .. "Hunters logged: " .. END .. chars)
+  local zone = GetRealZoneText()
+  local zoneCaught, zoneTotal, zoneMissing = HPL.ZoneProgress(zone)
+  if zoneTotal then
+    Line(lines, " ")
+    Line(lines, GOLD .. "In " .. zone .. ": " .. END .. zoneCaught .. " / " .. zoneTotal .. " skins caught")
+    local names = {}
+    for i = 1, math.min(table.getn(zoneMissing), 4) do
+      table.insert(names, HPL.skinsById[zoneMissing[i]].name)
+    end
+    if table.getn(names) > 0 then
+      local more = ""
+      if table.getn(zoneMissing) > 4 then more = ", ..." end
+      Line(lines, GREY .. "Still here: " .. table.concat(names, ", ") .. more .. END)
+    end
+  end
   Line(lines, " ")
   Line(lines, "Click a skin to see its details. Tick " .. WHITE .. "Show uncaught" .. END ..
     " to browse every skin and where to tame it.")
@@ -281,16 +415,32 @@ local function SkinText(def)
     Line(lines, GREY .. "Not caught yet" .. END)
   end
 
+  local info = HPL.FamilyInfo(def.family)
+  local role = HPL.FamilyRole(def.family)
+  if info and role then
+    Line(lines, " ")
+    Line(lines, GOLD .. "Role: " .. END .. (HPL.ROLE_COLORS[role] or WHITE) .. role .. END ..
+      GREY .. "  health " .. math.floor(info.health * 100) .. "%, armour " .. math.floor(info.armor * 100) ..
+      "%, damage " .. math.floor(info.damage * 100) .. "%" .. END)
+    Line(lines, GOLD .. "Can learn: " .. END .. table.concat(info.abilities or {}, ", "))
+  end
+
+  if c then
+    local best = BestPetWithStats(c)
+    local stats = best and StatsText(best.stats)
+    if stats then
+      Line(lines, GOLD .. "Your best: " .. END .. stats)
+      local more = StatsLine2(best.stats)
+      if more then Line(lines, GREY .. more .. END) end
+    end
+  end
+
   local npcs = def.npcs or {}
   if table.getn(npcs) > 0 then
     Line(lines, " ")
     Line(lines, GOLD .. "Where to tame:" .. END)
     for i = 1, math.min(table.getn(npcs), MAX_WHERE_LINES) do
-      local n = npcs[i]
-      local extra = ""
-      if n[3] and n[3] ~= "" then extra = " " .. n[3] end
-      if n[5] and n[5] ~= "" then extra = extra .. " " .. ORANGE .. n[5] .. END end
-      Line(lines, WHITE .. tostring(n[2]) .. END .. GREY .. extra .. END .. "  " .. GREY .. tostring(n[4]) .. END)
+      Line(lines, NpcLine(npcs[i]))
     end
     if table.getn(npcs) > MAX_WHERE_LINES then
       Line(lines, GREY .. "...and " .. (table.getn(npcs) - MAX_WHERE_LINES) .. " more" .. END)
@@ -310,6 +460,15 @@ local function PetText(sel)
   end
   if pet.firstSeen or pet.tamed then
     Line(lines, GOLD .. "First logged: " .. END .. HPL.FormatDate(pet.tamed or pet.firstSeen))
+  end
+  local stats = StatsText(pet.stats)
+  if stats then
+    Line(lines, GOLD .. "Stats: " .. END .. stats)
+    local more = StatsLine2(pet.stats)
+    if more then Line(lines, GREY .. more .. END) end
+  end
+  if pet.spells and table.getn(pet.spells) > 0 then
+    Line(lines, GOLD .. "Knows: " .. END .. table.concat(pet.spells, ", "))
   end
   Line(lines, " ")
   if HPL.assigning == pet then
@@ -400,6 +559,98 @@ end
 -- Window creation
 ------------------------------------------------------------------------------------------------
 
+-- Tooltip on a button or box, so short labels can still be explained.
+local function Explain(widget, title, body)
+  widget:SetScript("OnEnter", function()
+    GameTooltip:SetOwner(this, "ANCHOR_BOTTOM")
+    GameTooltip:SetText(title)
+    if body then GameTooltip:AddLine(body, 1, 1, 1, 1) end
+    GameTooltip:Show()
+  end)
+  widget:SetScript("OnLeave", function() GameTooltip:Hide() end)
+end
+
+-- Your collection as plain text, for pasting somewhere else.
+function HPL.ExportText()
+  local lines = {}
+  table.insert(lines, "PokeHuntLog: " .. HPL.totals.caught .. "/" .. HPL.totals.skins .. " skins (" ..
+    HPL.Percent(HPL.totals.caught, HPL.totals.skins) .. "%), " .. HPL.db.stats.tames .. " tames logged")
+  for i = 1, table.getn(HPL.tree) do
+    local t = HPL.tree[i]
+    for j = 1, table.getn(t.families) do
+      local f = t.families[j]
+      local names = {}
+      for k = 1, table.getn(f.skins) do
+        local c = HPL.caught[f.skins[k]]
+        if c then
+          table.insert(names, HPL.skinsById[f.skins[k]].name .. " (" .. c.maxLevel .. ")")
+        end
+      end
+      if table.getn(names) > 0 then
+        local stats = HPL.familyStats[t.name .. "/" .. f.name]
+        table.insert(lines, f.name .. " " .. stats.caught .. "/" .. stats.skins .. ": " ..
+          table.concat(names, ", "))
+      end
+    end
+  end
+  local unknown = table.getn(HPL.unknownPets or {})
+  if unknown > 0 then
+    table.insert(lines, unknown .. " pet(s) still waiting for a skin to be assigned.")
+  end
+  return table.concat(lines, "\n")
+end
+
+local exportFrame
+function HPL.ShowExport()
+  if not HPL.db then return end
+  if not exportFrame then
+    exportFrame = CreateFrame("Frame", "PokeHuntLogExportFrame", UIParent)
+    exportFrame:SetWidth(460)
+    exportFrame:SetHeight(360)
+    exportFrame:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
+    exportFrame:SetFrameStrata("DIALOG")
+    exportFrame:EnableMouse(true)
+    exportFrame:SetMovable(true)
+    exportFrame:RegisterForDrag("LeftButton")
+    exportFrame:SetScript("OnDragStart", function() this:StartMoving() end)
+    exportFrame:SetScript("OnDragStop", function() this:StopMovingOrSizing() end)
+    Backdrop(exportFrame, true)
+    table.insert(UISpecialFrames, "PokeHuntLogExportFrame")
+
+    local title = exportFrame:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+    title:SetPoint("TOP", exportFrame, "TOP", 0, -18)
+    title:SetText("Your collection as text")
+
+    local hint = exportFrame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+    hint:SetPoint("TOP", title, "BOTTOM", 0, -4)
+    hint:SetText(GREY .. "Press Ctrl+C to copy, then Escape to close." .. END)
+
+    local close = CreateFrame("Button", "PokeHuntLogExportCloseButton", exportFrame, "UIPanelCloseButton")
+    close:SetPoint("TOPRIGHT", exportFrame, "TOPRIGHT", -6, -6)
+    close:SetScript("OnClick", function() exportFrame:Hide() end)
+
+    local scroll = CreateFrame("ScrollFrame", "PokeHuntLogExportScroll", exportFrame, "UIPanelScrollFrameTemplate")
+    scroll:SetPoint("TOPLEFT", exportFrame, "TOPLEFT", 22, -64)
+    scroll:SetWidth(392)
+    scroll:SetHeight(266)
+
+    local box = CreateFrame("EditBox", "PokeHuntLogExportBox", scroll)
+    box:SetMultiLine(true)
+    box:SetAutoFocus(false)
+    box:SetMaxLetters(0)
+    box:SetWidth(392)
+    box:SetHeight(600)
+    box:SetFontObject(GameFontHighlightSmall)
+    box:SetScript("OnEscapePressed", function() exportFrame:Hide() end)
+    scroll:SetScrollChild(box)
+    exportFrame.box = box
+  end
+  exportFrame.box:SetText(HPL.ExportText())
+  exportFrame.box:HighlightText()
+  exportFrame:Show()
+  exportFrame.box:SetFocus()
+end
+
 local function CreateRow(i)
   local btn = CreateFrame("Button", "PokeHuntLogRow" .. i, frame)
   btn:SetWidth(ROW_WIDTH)
@@ -438,6 +689,8 @@ local function CreateRow(i)
   btn.label:SetPoint("RIGHT", btn.right, "LEFT", -6, 0)
 
   btn:SetScript("OnClick", function() OnRowClick(this, arg1) end)
+  btn:SetScript("OnEnter", function() HPL.RowTooltip(this) end)
+  btn:SetScript("OnLeave", function() GameTooltip:Hide() end)
   return btn
 end
 
@@ -503,6 +756,14 @@ local function CreateWindow()
   collapseButton:SetText("Collapse all")
   collapseButton:SetScript("OnClick", function() HPL.ToggleCollapseAll() end)
 
+  local exportButton = CreateFrame("Button", "PokeHuntLogExportButton", frame, "UIPanelButtonTemplate")
+  exportButton:SetWidth(110)
+  exportButton:SetHeight(22)
+  exportButton:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -136, 18)
+  exportButton:SetText("Export")
+  exportButton:SetScript("OnClick", function() HPL.ShowExport() end)
+  Explain(exportButton, "Export", "Your collection as text, ready to copy into Discord or a forum post.")
+
   local helpButton = CreateFrame("Button", "PokeHuntLogHelpButton", frame, "UIPanelButtonTemplate")
   helpButton:SetWidth(110)
   helpButton:SetHeight(22)
@@ -514,14 +775,35 @@ local function CreateWindow()
   summaryText:SetPoint("TOPLEFT", frame, "TOPLEFT", 24, -48)
   summaryText:SetJustifyH("LEFT")
 
+  local searchLabel = frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+  searchLabel:SetPoint("TOPLEFT", frame, "TOPLEFT", 214, -48)
+  searchLabel:SetText(GREY .. "Search" .. END)
+
+  searchBox = CreateFrame("EditBox", "PokeHuntLogSearchBox", frame, "InputBoxTemplate")
+  searchBox:SetWidth(110)
+  searchBox:SetHeight(18)
+  searchBox:SetPoint("TOPLEFT", frame, "TOPLEFT", 266, -44)
+  searchBox:SetAutoFocus(false)
+  searchBox:SetScript("OnTextChanged", function()
+    HPL.search = this:GetText()
+    HPL.RefreshUI()
+  end)
+  searchBox:SetScript("OnEnterPressed", function() this:ClearFocus() end)
+  searchBox:SetScript("OnEscapePressed", function()
+    this:SetText("")
+    this:ClearFocus()
+  end)
+  Explain(searchBox, "Search", "Type a skin, creature or zone name, for example durotar or bear.")
+
   uncaughtCheck = CreateFrame("CheckButton", "PokeHuntLogUncaughtCheck", frame, "UICheckButtonTemplate")
   uncaughtCheck:SetWidth(24)
   uncaughtCheck:SetHeight(24)
-  uncaughtCheck:SetPoint("TOPLEFT", frame, "TOPLEFT", 240, -42)
+  uncaughtCheck:SetPoint("TOPLEFT", frame, "TOPLEFT", 396, -42)
   local checkLabel = getglobal("PokeHuntLogUncaughtCheckText")
   if checkLabel then
-    checkLabel:SetText("Show uncaught")
+    checkLabel:SetText("Uncaught")
   end
+  Explain(uncaughtCheck, "Show uncaught skins", "Lists every skin in the game, greyed out, with where to tame it.")
   uncaughtCheck:SetScript("OnClick", function()
     HPL.db.settings.showUncaught = this:GetChecked() and true or false
     HPL.Changed()
@@ -530,9 +812,10 @@ local function CreateWindow()
   rangeCheck = CreateFrame("CheckButton", "PokeHuntLogRangeCheck", frame, "UICheckButtonTemplate")
   rangeCheck:SetWidth(24)
   rangeCheck:SetHeight(24)
-  rangeCheck:SetPoint("TOPLEFT", frame, "TOPLEFT", 370, -42)
+  rangeCheck:SetPoint("TOPLEFT", frame, "TOPLEFT", 500, -42)
   local rangeLabel = getglobal("PokeHuntLogRangeCheckText")
-  if rangeLabel then rangeLabel:SetText("Range icon") end
+  if rangeLabel then rangeLabel:SetText("Range") end
+  Explain(rangeCheck, "Range icon", "Shows whether your target is in Auto Shot range, the dead zone, or melee range.")
   rangeCheck:SetScript("OnClick", function()
     HPL.db.settings.rangeIcon = this:GetChecked() and true or false
     HPL.UpdateHunterTools()
@@ -541,9 +824,10 @@ local function CreateWindow()
   feedCheck = CreateFrame("CheckButton", "PokeHuntLogFeedCheck", frame, "UICheckButtonTemplate")
   feedCheck:SetWidth(24)
   feedCheck:SetHeight(24)
-  feedCheck:SetPoint("TOPLEFT", frame, "TOPLEFT", 480, -42)
+  feedCheck:SetPoint("TOPLEFT", frame, "TOPLEFT", 590, -42)
   local feedLabel = getglobal("PokeHuntLogFeedCheckText")
-  if feedLabel then feedLabel:SetText("Feed reminder") end
+  if feedLabel then feedLabel:SetText("Feed") end
+  Explain(feedCheck, "Feed reminder", "Shows a happiness face when your pet stops being happy. Click it to feed.")
   feedCheck:SetScript("OnClick", function()
     HPL.db.settings.feedReminder = this:GetChecked() and true or false
     HPL.UpdateHunterTools()

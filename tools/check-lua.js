@@ -25,7 +25,7 @@ const KNOWN_GLOBALS = new Set((
   "CreateFrame UIParent Minimap GameTooltip DEFAULT_CHAT_FRAME UIErrorsFrame UISpecialFrames SlashCmdList " +
   "FauxScrollFrame_Update FauxScrollFrame_GetOffset FauxScrollFrame_OnVerticalScroll FauxScrollFrame_SetOffset " +
   "PlaySound GetCursorPosition IsShiftKeyDown IsControlKeyDown IsAltKeyDown " +
-  "STANDARD_TEXT_FONT " +
+  "STANDARD_TEXT_FONT GameFontNormal GameFontNormalSmall GameFontNormalLarge GameFontHighlight GameFontHighlightSmall " +
   // Units, pets, world
   "UnitExists UnitName UnitLevel UnitCreatureFamily UnitCreatureType UnitIsUnit UnitClass UnitIsPlayer " +
   "UnitPlayerControlled UnitIsDead UnitClassification HasPetUI GetStablePetInfo GetPetLoyalty " +
@@ -35,6 +35,8 @@ const KNOWN_GLOBALS = new Set((
   "HasAction IsActionInRange GetActionTexture CheckInteractDistance UnitCanAttack GetPetHappiness UnitBuff " +
   "CastSpellByName WorldFrame " +
   "seterrorhandler geterrorhandler _ERRORMESSAGE debugstack GetNumAddOns GetAddOnInfo GetAddOnMetadata GetBuildInfo " +
+  "UnitHealthMax UnitManaMax UnitAttackPower UnitDamage UnitAttackSpeed UnitArmor UnitStat GetSpellName " +
+  "GetInventorySlotInfo GetInventoryItemCount PetAbandon ChatFontNormal " +
   "SUPERWOW_VERSION"
 ).split(/\s+/).filter(Boolean));
 

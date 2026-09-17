@@ -18,6 +18,10 @@ It also adds two hunter helpers:
   - orange **Melee**
   - grey **Out of range**
 - **New skin tooltips.** Hover a wild beast and its tooltip says whether that skin is new to your log or already caught.
+- **Family roles.** Every family is labelled Tank, DPS, Balanced, or AoE tank for gorillas, with its health, armour and damage modifiers, abilities and diet on hover.
+- **Pet stats.** Attack power, damage, attack speed, health, armour and stats are recorded for each of your pets, along with the abilities it has learned.
+- **Search** by skin, creature or zone, and **export** your collection as text.
+- **Low ammo warnings** at 200 and 50 shots.
 - **Feed reminder.** A happiness face pops up when your pet drops to Content (or only at Unhappy, if you prefer), with a chat message and a sound. Click it to cast Feed Pet, then click a food in your bags.
 
 ## Quick start
@@ -76,6 +80,8 @@ To remove a pet from the log, Shift-click **Forget pet**.
 | `/petlog minimap` | Show or hide the minimap button |
 | `/petlog notify` | Turn "new skin" messages on or off |
 | `/petlog tooltip` | Turn the "new skin" line on beast tooltips on or off |
+| `/petlog ammo` | Turn low ammo warnings on or off |
+| `/petlog export` | Show your collection as text to copy |
 | `/petlog range` | Turn the range icon on or off |
 | `/petlog feed` | Turn the feed reminder on or off |
 | `/petlog feed content` / `/petlog feed unhappy` | Remind when the pet is Content or worse (default), or only when Unhappy |
@@ -123,8 +129,28 @@ So far the addon has been confirmed to load on Ravencraft, and the log window wo
 22. [ ] Hovering a wild beast shows a PokeHuntLog line saying NEW skin, caught, or not in the list.
 23. [ ] Collapse all folds the list, and pressing it again opens it.
 24. [ ] A non-hunter character has no minimap button.
+25. [ ] Families show a role (Bear Tank, Cat DPS, Gorilla AoE tank), and hovering one shows modifiers, abilities and diet.
+26. [ ] Calling a pet records its stats: its details show attack power, damage, speed, health and armour a few seconds later, plus what it knows.
+27. [ ] Where to tame marks rares, fast beasts and "tameable now" for creatures at or below your level.
+28. [ ] The overview shows the skins still to catch in your current zone.
+29. [ ] Typing in Search filters the list; clearing it restores everything.
+30. [ ] Export shows your collection as text, and Ctrl+C copies it.
+31. [ ] Hovering the feed face gives advice, and low ammo warns once at 200 and once at 50 shots.
 
 ## Changelog
+
+### 1.5.0
+
+- **Family roles and stats.** Each family shows Tank, DPS, Balanced or AoE tank in the list, and hovering shows its health, armour and damage modifiers, trainable abilities and diet.
+- **Pet stats.** Attack power, damage, attack speed, health, armour, strength, agility and stamina are recorded a couple of seconds after a pet is called, plus the abilities it has learned.
+- **Rare and fast creatures.** Where to tame now marks rares and elites, shows attack speed for fast beasts (Broken Tooth is 1.0), and flags creatures you are high enough level to tame.
+- **Zone progress.** The overview shows how many skins of the zone you are standing in you still need, and names a few.
+- **Search box** for skin, creature and zone names.
+- **Export** button and `/petlog export` for a text version of your collection.
+- **Milestones** in chat at 5, 10, 25, 50, 75 and 100 skins, when a family is completed, and for your first level 60 pet.
+- **Feeding advice.** The game never tells addons the hidden happiness number, so the reminder tracks how long your pet has been at its current level: at Content a full meal fits with nothing wasted.
+- **Low ammo warnings** at 200 and 50 shots (`/petlog ammo` to turn off).
+- **A warning** when you abandon the only pet you have with a given skin.
 
 ### 1.4.0
 
