@@ -22,6 +22,7 @@ It also adds two hunter helpers:
 - **Pet stats.** Attack power, damage, attack speed, health, armour and stats are recorded for each of your pets, along with the abilities it has learned.
 - **Search** by skin, creature or zone, and **export** your collection as text.
 - **Low ammo warnings** at 200 and 50 shots.
+- **Ability list** covering every pet ability: each rank's pet level and training point cost, which families can learn it, and the beasts that teach it.
 - **Training panel** showing your pet's unspent training points, what its family can learn, which ability ranks you have unlocked by taming, where to tame the next rank, and what your hunter trainer has waiting.
 - **Feed reminder.** A happiness face pops up when your pet drops to Content (or only at Unhappy, if you prefer), with a chat message and a sound. Click it to cast Feed Pet, then click a food in your bags.
 
@@ -146,8 +147,15 @@ So far the addon has been confirmed to load on Ravencraft, and the log window wo
 32. [ ] The Training panel shows your pet's training points, what it knows, and what its family can learn.
 33. [ ] After taming a beast, the panel counts the ability rank it knew as unlocked, and points at a beast for the next rank.
 34. [ ] Opening a hunter trainer once fills the Hunter trainer section, and levelling up reminds you when something is ready.
+35. [ ] The Training panel's All abilities button lists all 21 abilities with their ranks, and the list scrolls to the end without being cut off.
+36. [ ] Taming a beast that teaches two abilities marks both as unlocked.
 
 ## Changelog
+
+### 1.7.0
+
+- **All abilities view** in the Training panel: every ability, each rank with the pet level and training point cost it needs, which families can learn it, and the lowest level beast that teaches it (marked when you are high enough to tame it). Ranks you have already unlocked are marked.
+- **Fixed:** beasts that teach more than one ability, such as a Prairie Wolf Alpha with "Bite 2, Furious Howl 1", only counted for the first one. All of them now unlock.
 
 ### 1.6.1
 

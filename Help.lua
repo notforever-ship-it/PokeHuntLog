@@ -36,6 +36,7 @@ local HELP_TEXT = table.concat({
     "which ranks you have unlocked by taming, and where to tame the next one.",
   "- Taming a beast unlocks the ability rank it knows; a pet trainer then teaches it to any of your pets.",
   "- Visit a hunter trainer once and the log remembers what it offers, then tells you when something is ready.",
+  "- " .. WHITE .. "All abilities" .. END .. " in the Training panel lists every pet ability, each rank with its pet level and cost, and which beast teaches it.",
   " ",
   GOLD .. "Roles" .. END,
   "- " .. WHITE .. "Tank" .. END .. " takes hits, " .. WHITE .. "DPS" .. END .. " deals damage, " ..
