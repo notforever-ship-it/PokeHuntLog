@@ -273,7 +273,8 @@ local function SkinText(def)
     local names = {}
     for i = 1, table.getn(c.pets) do
       local p = c.pets[i]
-      table.insert(names, tostring(p.pet.name) .. " (" .. (p.pet.level or "?") .. ")")
+      local from = p.pet.creature and (", " .. p.pet.creature) or ""
+      table.insert(names, tostring(p.pet.name) .. " (" .. (p.pet.level or "?") .. from .. ")")
     end
     Line(lines, GOLD .. "Pets: " .. END .. table.concat(names, ", "))
   else
@@ -304,6 +305,9 @@ local function PetText(sel)
   Line(lines, GREY .. tostring(pet.ctype or "Beast") .. " / " .. tostring(pet.family) .. END)
   Line(lines, GOLD .. "Level: " .. END .. LevelText(pet.level))
   Line(lines, GOLD .. "Hunter: " .. END .. HPL.CharName(sel.charKey))
+  if pet.creature then
+    Line(lines, GOLD .. "Tamed from: " .. END .. pet.creature)
+  end
   if pet.firstSeen or pet.tamed then
     Line(lines, GOLD .. "First logged: " .. END .. HPL.FormatDate(pet.tamed or pet.firstSeen))
   end
@@ -492,6 +496,13 @@ local function CreateWindow()
   end)
   lockButton:SetScript("OnLeave", function() GameTooltip:Hide() end)
 
+  local collapseButton = CreateFrame("Button", "PokeHuntLogCollapseButton", frame, "UIPanelButtonTemplate")
+  collapseButton:SetWidth(110)
+  collapseButton:SetHeight(22)
+  collapseButton:SetPoint("LEFT", lockButton, "RIGHT", 8, 0)
+  collapseButton:SetText("Collapse all")
+  collapseButton:SetScript("OnClick", function() HPL.ToggleCollapseAll() end)
+
   local helpButton = CreateFrame("Button", "PokeHuntLogHelpButton", frame, "UIPanelButtonTemplate")
   helpButton:SetWidth(110)
   helpButton:SetHeight(22)
@@ -650,6 +661,28 @@ local function CreateWindow()
     HPL.selected = nil
     HPL.Changed()
   end)
+end
+
+-- Collapse every family and type, or open them all again.
+function HPL.ToggleCollapseAll()
+  local collapsed = HPL.db.settings.collapsed
+  local anyOpen = false
+  for i = 1, table.getn(HPL.tree) do
+    local t = HPL.tree[i]
+    if not collapsed["t:" .. t.name] then anyOpen = true end
+    for j = 1, table.getn(t.families) do
+      if not collapsed["f:" .. t.name .. "/" .. t.families[j].name] then anyOpen = true end
+    end
+  end
+  for i = 1, table.getn(HPL.tree) do
+    local t = HPL.tree[i]
+    collapsed["t:" .. t.name] = anyOpen or nil
+    for j = 1, table.getn(t.families) do
+      collapsed["f:" .. t.name .. "/" .. t.families[j].name] = anyOpen or nil
+    end
+  end
+  if anyOpen then collapsed["unknown"] = nil end
+  HPL.RefreshUI()
 end
 
 function HPL.UpdateLogLockButton()

@@ -20,7 +20,8 @@ end
 
 function HPL.UpdateMinimapButton()
   if not button then return end
-  if HPL.db.settings.minimapHidden then
+  -- Nothing here is useful to other classes, so the button only shows for hunters.
+  if HPL.db.settings.minimapHidden or not HPL.IsHunter() then
     button:Hide()
   else
     UpdatePosition()
@@ -79,4 +80,6 @@ function HPL.InitMinimapButton()
   button:SetScript("OnLeave", function() GameTooltip:Hide() end)
 
   HPL.UpdateMinimapButton()
+  -- Class info can be missing while addons load, so check again once the world is up.
+  HPL.After(6, function() HPL.UpdateMinimapButton() end)
 end

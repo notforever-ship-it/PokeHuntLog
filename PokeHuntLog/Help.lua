@@ -16,6 +16,8 @@ local HELP_TEXT = table.concat({
   "- Open it with the " .. WHITE .. "beast icon on your minimap" .. END .. " or " .. WHITE .. "/petlog" .. END .. ".",
   "- Tamed beasts are added automatically. Call each of your pets and visit a stable master once so the pets you already have are added too.",
   "- Tick " .. WHITE .. "Show uncaught" .. END .. " to see every skin and where to tame it.",
+  "- Hover a wild beast and its tooltip says " .. GREEN .. "NEW skin!" .. END .. " if you haven't caught that look yet.",
+  "- " .. WHITE .. "Collapse all" .. END .. " folds the whole list up; press it again to open it.",
   "- A pet under " .. ORANGE .. "Pets with unknown skin" .. END .. ": click it, press " .. WHITE .. "Assign skin" .. END ..
     ", then click its skin in the list.",
   " ",
@@ -39,6 +41,7 @@ local HELP_TEXT = table.concat({
   WHITE .. "/petlog range" .. END .. ", " .. WHITE .. "/petlog feed" .. END .. " - turn the range icon or feed reminder on/off",
   WHITE .. "/petlog feed unhappy" .. END .. " - only remind when the pet is unhappy",
   WHITE .. "/petlog uncaught" .. END .. " - show or hide skins you haven't caught",
+  WHITE .. "/petlog tooltip" .. END .. " - turn the beast tooltip line on or off",
   WHITE .. "/petlog commands" .. END .. " - list every command in chat",
   WHITE .. "/petlog debug on" .. END .. " - show what the addon notices in chat (handy for bug reports)",
 }, "\n")

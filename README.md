@@ -17,6 +17,7 @@ It also adds two hunter helpers:
   - red **Dead zone** (too close to shoot, too far to melee)
   - orange **Melee**
   - grey **Out of range**
+- **New skin tooltips.** Hover a wild beast and its tooltip says whether that skin is new to your log or already caught.
 - **Feed reminder.** A happiness face pops up when your pet drops to Content (or only at Unhappy, if you prefer), with a chat message and a sound. Click it to cast Feed Pet, then click a food in your bags.
 
 ## Quick start
@@ -74,6 +75,7 @@ To remove a pet from the log, Shift-click **Forget pet**.
 | `/petlog uncaught` | Show or hide skins you haven't caught |
 | `/petlog minimap` | Show or hide the minimap button |
 | `/petlog notify` | Turn "new skin" messages on or off |
+| `/petlog tooltip` | Turn the "new skin" line on beast tooltips on or off |
 | `/petlog range` | Turn the range icon on or off |
 | `/petlog feed` | Turn the feed reminder on or off |
 | `/petlog feed content` / `/petlog feed unhappy` | Remind when the pet is Content or worse (default), or only when Unhappy |
@@ -87,7 +89,7 @@ To remove a pet from the log, Shift-click **Forget pet**.
 
 ## How it works
 
-- **Tames.** When you cast Tame Beast, the addon remembers the beast (name, family, level, zone). When a pet with that name appears, it's logged as a new tame.
+- **Tames.** When you cast Tame Beast, the addon remembers the beast (name, family, level, zone). The pet that appears moments later is logged as that beast, and the beast's name is kept as the pet's "tamed from" name. This works even though the game names new pets after their family (taming a Clattering Scorpid gives a pet called "Scorpid").
 - **SuperWoW.** If you run SuperWoW, the addon also reads the creature's ID, which pins down the skin exactly. Without it, skins are matched by creature name. That's still reliable, because no creature name is shared between two skins in the database.
 - **Custom beasts.** A beast that isn't in the database (for example a custom Ravencraft beast) is added as a new skin named after the creature when you tame it.
 - **Levels.** Levels are updated whenever your pet levels up, whenever you call it, and whenever you open the stable.
@@ -117,8 +119,20 @@ So far the addon has been confirmed to load on Ravencraft, and the log window wo
 18. [ ] **Unlock icons** lets you drag both icons, and the button then says Lock icons. They stay where you put them after `/reload`.
 19. [ ] The How to use window opens with Help, `/petlog help` or Shift-clicking the minimap icon, and never pops up by itself. All the text fits in the window.
 20. [ ] With Auto Shot removed from your bars, targeting an enemy prints a one-time hint to put it on a bar.
+21. [ ] Taming a beast logs it under the right skin, with Tames going up by 1, even though the new pet is named after its family. Its details show the beast it was tamed from.
+22. [ ] Hovering a wild beast shows a PokeHuntLog line saying NEW skin, caught, or not in the list.
+23. [ ] Collapse all folds the list, and pressing it again opens it.
+24. [ ] A non-hunter character has no minimap button.
 
 ## Changelog
+
+### 1.4.0
+
+- **Fixed: tames weren't being logged.** New pets are named after their family on this server (a tamed Clattering Scorpid is called "Scorpid"), so matching by name never worked and pets landed under "Pets with unknown skin" with the tame count stuck at 0. Tames are now matched by family and timing.
+- Each pet now records the beast it was tamed from, shown in its details and next to the pets on a skin.
+- Added the "new skin" line on beast tooltips (`/petlog tooltip` to turn it off).
+- Added a **Collapse all** button.
+- The minimap button now only appears for hunters.
 
 ### 1.3.3
 

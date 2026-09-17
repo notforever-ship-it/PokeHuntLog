@@ -59,8 +59,14 @@ local function ValidPetName(name)
   return name and name ~= "" and name ~= "Unknown" and name ~= UNKNOWNOBJECT
 end
 
--- Most recently seen pet of this character with this name and family.
-local function FindPet(list, name, family)
+-- Most recently seen pet of this character. Matched by GUID when SuperWoW is present, otherwise by
+-- name and family.
+local function FindPet(list, name, family, guid)
+  if guid then
+    for i = 1, table.getn(list) do
+      if list[i].guid == guid then return list[i] end
+    end
+  end
   local found
   for i = 1, table.getn(list) do
     local p = list[i]
@@ -116,7 +122,7 @@ function HPL.ScanActivePet(source)
   local ctype = UnitCreatureType("pet") or "Beast"
   local guid = HPL.UnitGuid("pet")
   local now = GetTime()
-  local pet = FindPet(list, name, family)
+  local pet = FindPet(list, name, family, guid)
   local active = HPL.activePet
   local sameGuid = not guid or not activeGuid or guid == activeGuid
   activeGuid = guid
@@ -138,14 +144,19 @@ function HPL.ScanActivePet(source)
     pending = nil
   end
 
-  -- If the Tame Beast cast wasn't reported, an unseen pet named exactly like the beast we just
-  -- targeted is still a fresh tame.
-  local tame = pending
-  if not tame and not pet and lastBeast and now - lastBeast.time < 90 then
+  -- Work out whether this pet is a fresh tame. The pet is NOT named after the beast on this server
+  -- (taming a Clattering Scorpid gives a pet called "Scorpid"), so never match on the name: a Tame Beast
+  -- cast on a beast of this family, moments ago, is the tame.
+  local tame = nil
+  if pending and pending.family == family then
+    tame = pending
+  elseif not pet and lastBeast and now - lastBeast.time < 90 and lastBeast.family == family and
+    lastBeast.name == name then
+    -- Cast events were missed, but an unseen pet named exactly like the beast we just targeted is one.
     tame = lastBeast
   end
 
-  if tame and tame.family == family and tame.name == name then
+  if tame and source ~= "name" then
     -- New tame.
     local skin, how = HPL.ResolveSkin(family, tame.name, tame.npcIds)
     if not skin then
@@ -158,7 +169,7 @@ function HPL.ScanActivePet(source)
       (tame == pending and "" or " (from last target)"))
     pet = {
       name = name, family = family, ctype = ctype, creature = tame.name, level = level,
-      tamedLevel = tame.level, tamed = time(), zone = tame.zone, witnessed = true,
+      tamedLevel = tame.level, tamed = time(), zone = tame.zone, witnessed = true, guid = guid,
       npcId = tame.npcIds and tame.npcIds[1], skin = skin, match = how, lastSeen = time(),
     }
     table.insert(list, pet)
@@ -176,7 +187,7 @@ function HPL.ScanActivePet(source)
       ", guid " .. tostring(guid) .. ") -> skin " .. tostring(skin) .. " via " .. tostring(how))
     pet = {
       name = name, family = family, ctype = ctype, level = level, firstSeen = time(), witnessed = false,
-      creature = (how == "name" or how == "ambiguous") and name or nil,
+      creature = (how == "name" or how == "ambiguous") and name or nil, guid = guid,
       skin = skin, match = how, lastSeen = time(),
     }
     table.insert(list, pet)
@@ -188,6 +199,7 @@ function HPL.ScanActivePet(source)
       pet.level = level
     end
     pet.lastSeen = time()
+    pet.guid = guid or pet.guid
     HPL.activePet = pet
   end
 
