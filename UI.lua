@@ -732,7 +732,7 @@ local function CreateWindow()
   close:SetScript("OnClick", function() frame:Hide() end)
 
   local credit = frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
-  credit:SetPoint("TOP", frame, "TOP", 0, -40)
+  credit:SetPoint("BOTTOM", frame, "BOTTOM", 0, 46)
   credit:SetText(GREY .. "Made by " .. END .. "|cffabd473stealthzi" .. END .. GREY .. "   v" .. HPL.VERSION .. END)
 
   lockButton = CreateFrame("Button", "PokeHuntLogLockButton", frame, "UIPanelButtonTemplate")
