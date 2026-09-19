@@ -153,11 +153,16 @@ So far the addon has been confirmed to load on Ravencraft, and the log window wo
 31. [ ] Hovering the feed face gives advice, and low ammo warns once at 200 and once at 50 shots.
 32. [ ] The Training panel shows your pet's training points, what it knows, and what its family can learn.
 33. [ ] After taming a beast, the panel counts the ability rank it knew as unlocked, and points at a beast for the next rank.
-34. [ ] Opening a pet trainer once fills the Pet trainer section, and levelling up reminds you when something is ready.
+34. [ ] Opening a pet trainer and a hunter trainer once fills their sections of the Training panel, and levelling up reminds you when something is ready. Profession trainers are ignored.
 35. [ ] The Training panel's All abilities button lists all 21 abilities with their ranks, and the list scrolls to the end without being cut off.
 36. [ ] Taming a beast that teaches two abilities marks both as unlocked.
 
 ## Changelog
+
+### 1.8.2
+
+- **Fixed a new tame being filed as your old pet** when both had the same default name and level (a Greater Plainstrider taken for an earlier White Tallstrider, both "Tallstrider", level 12). 1.8.0 threw away a tame whenever the game reported the Tame Beast channel as failed, and a successful tame can end that way. That's gone, and a pet with no experience yet now always counts as a new tame.
+- **The Training panel no longer shows profession recipes.** Only pet trainers and hunter trainers are remembered, each in its own section, so visiting one no longer wipes the other. Pet trainer abilities are checked against your pet's level rather than yours.
 
 ### 1.8.1
 

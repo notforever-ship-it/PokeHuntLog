@@ -94,6 +94,14 @@ local function Rename(pet, name)
   pet.name = name
 end
 
+-- A pet with no experience at all has only just been tamed: an old pet being called back has earned
+-- some. (At the level cap experience stops, so it proves nothing there.)
+local function FreshPet(level)
+  if level >= HPL.MAX_LEVEL then return false end
+  local ok, xp = pcall(GetPetExperience)
+  return ok and xp == 0
+end
+
 -- A tamed beast keeps its level. 0 means the pet's level hasn't loaded yet.
 local function LevelMatches(beastLevel, petLevel)
   if not beastLevel or beastLevel <= 0 or petLevel == 0 then return true end
@@ -243,14 +251,16 @@ function HPL.ScanActivePet(source)
   --     beast's level.
   --   * The name event often arrives before UNIT_PET. It has to count, or the tame is filed as an
   --     unknown pet and UNIT_PET then finds that record instead.
+  --   * Without a Tame Beast cast seen, the beast we last targeted still counts, if the pet still has its
+  --     default name, the beast's family and level, and is new: no record, or no experience yet (an old
+  --     namesake at the same level has earned some).
   local tame = nil
+  local fresh = FreshPet(level)
   if foundBy ~= "guid" and foundBy ~= "rename" then
     if pending and pending.family == family and (not pet or LevelMatches(pending.level, level)) then
       tame = pending
-    elseif not pet and lastBeast and now - lastBeast.time < 90 and lastBeast.family == family and
+    elseif (not pet or fresh) and lastBeast and now - lastBeast.time < 90 and lastBeast.family == family and
       (lastBeast.name == name or name == family) and LevelMatches(lastBeast.level, level) then
-      -- Cast events were missed, but a brand new pet still wearing its default name, with the family
-      -- and level of the beast we just targeted, is that beast.
       tame = lastBeast
     end
   end
@@ -265,7 +275,8 @@ function HPL.ScanActivePet(source)
     end
     local wasCaught = HPL.caught[skin] ~= nil
     HPL.Debug("new tame: " .. name .. " (" .. family .. ") -> skin " .. tostring(skin) .. " via " .. tostring(how) ..
-      (tame == pending and "" or " (from last target)") .. (foundBy == "name" and ", not the old namesake" or ""))
+      (tame == pending and "" or " (from last target)") .. (foundBy == "name" and ", not the old namesake" or "") ..
+      (fresh and ", no experience yet" or ""))
     pet = {
       name = name, family = family, ctype = ctype, creature = tame.name, level = level,
       tamedLevel = tame.level, firstLevel = level, tamed = time(), zone = tame.zone, witnessed = true, guid = guid,
@@ -283,7 +294,9 @@ function HPL.ScanActivePet(source)
     local npcIds = HPL.NpcIdsFromGuid(HPL.UnitGuid("pet"))
     local skin, how = HPL.ResolveSkin(family, name, npcIds)
     local wasCaught = skin and HPL.caught[skin] ~= nil
-    HPL.Debug("first time seeing pet " .. name .. " (" .. family .. ", level " .. level .. ", source " .. tostring(source) ..
+    HPL.Debug("first time seeing pet " .. name .. " (" .. family .. ", level " .. level .. ", fresh " .. tostring(fresh) ..
+      ", pending " .. tostring(pending and pending.name) .. ", last target " .. tostring(lastBeast and lastBeast.name) ..
+      ", source " .. tostring(source) ..
       ", guid " .. tostring(guid) .. ") -> skin " .. tostring(skin) .. " via " .. tostring(how))
     pet = {
       name = name, family = family, ctype = ctype, level = level, firstLevel = level, firstSeen = time(),
@@ -389,10 +402,6 @@ function HPL.InitTracker()
       -- arg1 caster guid, arg2 target guid, arg3 "START"/"CAST"/"FAIL"/"CHANNEL", arg4 spell id
       if arg4 == HPL.TAME_BEAST_SPELL_ID and arg1 == HPL.UnitGuid("player") then
         HPL.Debug("UNIT_CASTEVENT Tame Beast: " .. tostring(arg3) .. ", target " .. tostring(arg2) .. ", duration " .. tostring(arg5))
-      end
-      if arg4 == HPL.TAME_BEAST_SPELL_ID and arg3 == "FAIL" and arg1 == HPL.UnitGuid("player") then
-        -- Interrupted or resisted: nothing was tamed, so a pet called soon after is not this beast.
-        pending = nil
       end
       if arg4 == HPL.TAME_BEAST_SPELL_ID and arg3 ~= "FAIL" and arg1 == HPL.UnitGuid("player") then
         if type(arg2) == "string" and UnitExists(arg2) then

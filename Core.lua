@@ -4,7 +4,7 @@
 PokeHuntLog = {}
 local HPL = PokeHuntLog
 
-HPL.VERSION = "1.8.1"
+HPL.VERSION = "1.8.2"
 HPL.DB_VERSION = 1
 HPL.MAX_LEVEL = 60
 HPL.TAME_BEAST_SPELL_ID = 1515

@@ -38,7 +38,7 @@ const KNOWN_GLOBALS = new Set((
   "UnitHealthMax UnitManaMax UnitAttackPower UnitDamage UnitAttackSpeed UnitArmor UnitStat GetSpellName " +
   "GetInventorySlotInfo GetInventoryItemCount PetAbandon ChatFontNormal " +
   "GetPetTrainingPoints GetNumTrainerServices GetTrainerServiceInfo GetTrainerServiceLevelReq " +
-  "UnitRangedDamage GetSpellCooldown GetSpellTexture UnitMana " +
+  "GetPetExperience IsTradeskillTrainer UnitRangedDamage GetSpellCooldown GetSpellTexture UnitMana " +
   "SUPERWOW_VERSION"
 ).split(/\s+/).filter(Boolean));
 

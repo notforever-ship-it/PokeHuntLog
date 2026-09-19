@@ -88,34 +88,61 @@ local function PetKnows()
 end
 
 ------------------------------------------------------------------------------------------------
--- Pet trainer: remembered from the last visit
+-- Pet and hunter trainers: remembered from the last visit
 ------------------------------------------------------------------------------------------------
+
+-- The kind of trainer is told by its list headers: pet trainers file everything under "Beast Training",
+-- hunter trainers under the talent trees. Anyone else (professions, weapon masters) is ignored.
+local TRAINER_HEADERS = {
+  ["Beast Training"] = "pet",
+  ["Beast Mastery"] = "hunter", ["Marksmanship"] = "hunter", ["Survival"] = "hunter",
+}
+HPL.TRAINER_LABELS = { pet = "Pet trainer", hunter = "Hunter trainer" }
+
+local function TrainerRecords()
+  if not HPL.db.trainers then HPL.db.trainers = {} end
+  local key = HPL.CharKey()
+  if not HPL.db.trainers[key] then HPL.db.trainers[key] = {} end
+  return HPL.db.trainers[key]
+end
 
 local function ScanTrainer()
   if not HPL.db then return end
+  local tradeOk, isTrade = pcall(IsTradeskillTrainer)
+  if tradeOk and isTrade then return end
   local ok, count = pcall(GetNumTrainerServices)
   if not ok or not count or count == 0 then return end
-  local services = {}
+  local services, kind = {}, nil
   for i = 1, count do
     local name, rank, category = GetTrainerServiceInfo(i)
-    if name and category ~= "header" then
+    if category == "header" then
+      kind = kind or TRAINER_HEADERS[name or ""]
+    elseif name then
       local levelOk, level = pcall(GetTrainerServiceLevelReq, i)
       table.insert(services, {
         name = name, rank = rank, category = category, level = levelOk and level or nil,
       })
     end
   end
+  if not kind then
+    HPL.Debug("trainer ignored: not a pet or hunter trainer")
+    return
+  end
   if table.getn(services) == 0 then return end
-  if not HPL.db.trainer then HPL.db.trainer = {} end
-  HPL.db.trainer[HPL.CharKey()] = { when = time(), zone = GetRealZoneText(), services = services }
-  HPL.Debug("trainer scan: " .. table.getn(services) .. " services")
+  TrainerRecords()[kind] = { when = time(), zone = GetRealZoneText(), services = services }
+  HPL.Debug(kind .. " trainer scan: " .. table.getn(services) .. " services")
 end
 
--- Abilities the trainer had that you are now high enough level for.
-local function TrainerReady()
-  local record = HPL.db.trainer and HPL.db.trainer[HPL.CharKey()]
+-- What a trainer had that you (hunter trainer) or your pet (pet trainer) are now high enough level for.
+local function TrainerReady(kind)
+  local record = HPL.db.trainers and HPL.db.trainers[HPL.CharKey()] and HPL.db.trainers[HPL.CharKey()][kind]
   if not record then return nil end
-  local level = UnitLevel("player") or 0
+  local level
+  if kind == "pet" then
+    level = UnitExists("pet") and UnitLevel("pet") or 0
+  else
+    level = UnitLevel("player") or 0
+  end
   local ready, later = {}, {}
   for i = 1, table.getn(record.services) do
     local s = record.services[i]
@@ -206,25 +233,30 @@ function HPL.TrainingText()
     end
   end
 
-  Line(" ")
-  Line(GOLD .. "Pet trainer" .. END)
-  local ready, later, record = TrainerReady()
-  if not record then
-    Line(GREY .. "Visit a pet trainer once and the log will remember what it offers." .. END)
-  else
-    Line(GREY .. "Seen " .. HPL.FormatDate(record.when) .. (record.zone and (" in " .. record.zone) or "") .. END)
-    if table.getn(ready) > 0 then
-      Line(GREEN .. "Ready to learn: " .. END .. table.concat(ready, ", "))
+  local kinds = { "pet", "hunter" }
+  for k = 1, 2 do
+    local kind = kinds[k]
+    Line(" ")
+    Line(GOLD .. HPL.TRAINER_LABELS[kind] .. END)
+    local ready, later, record = TrainerReady(kind)
+    if not record then
+      Line(GREY .. "Visit a " .. string.lower(HPL.TRAINER_LABELS[kind]) ..
+        " once and the log will remember what it offers." .. END)
     else
-      Line(GREY .. "Nothing waiting at your level." .. END)
-    end
-    if table.getn(later) > 0 then
-      table.sort(later, function(a, b) return a.level < b.level end)
-      local upcoming = {}
-      for i = 1, math.min(table.getn(later), 6) do
-        table.insert(upcoming, later[i].label .. " (" .. later[i].level .. ")")
+      Line(GREY .. "Seen " .. HPL.FormatDate(record.when) .. (record.zone and (" in " .. record.zone) or "") .. END)
+      if table.getn(ready) > 0 then
+        Line(GREEN .. "Ready to learn: " .. END .. table.concat(ready, ", "))
+      else
+        Line(GREY .. "Nothing waiting at " .. (kind == "pet" and "your pet's" or "your") .. " level." .. END)
       end
-      Line(GOLD .. "Coming up: " .. END .. table.concat(upcoming, ", "))
+      if table.getn(later) > 0 then
+        table.sort(later, function(a, b) return a.level < b.level end)
+        local upcoming = {}
+        for i = 1, math.min(table.getn(later), 6) do
+          table.insert(upcoming, later[i].label .. " (" .. later[i].level .. ")")
+        end
+        Line(GOLD .. "Coming up: " .. END .. table.concat(upcoming, ", "))
+      end
     end
   end
 
@@ -397,11 +429,16 @@ function HPL.TrainingReminder()
       "(/petlog training).")
   end
 
-  local ready = TrainerReady()
-  if ready and table.getn(ready) > 0 and remindedLevel ~= level then
-    remindedLevel = level
-    HPL.Print(table.getn(ready) .. " ability(s) waiting at your pet trainer: " ..
-      table.concat(ready, ", ") .. ".")
+  if remindedLevel ~= level then
+    local kinds = { "pet", "hunter" }
+    for k = 1, 2 do
+      local ready = TrainerReady(kinds[k])
+      if ready and table.getn(ready) > 0 then
+        remindedLevel = level
+        HPL.Print(table.getn(ready) .. " ability(s) waiting at your " .. string.lower(HPL.TRAINER_LABELS[kinds[k]]) ..
+          ": " .. table.concat(ready, ", ") .. ".")
+      end
+    end
   end
 end
 
