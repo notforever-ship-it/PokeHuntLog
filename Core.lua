@@ -4,7 +4,7 @@
 PokeHuntLog = {}
 local HPL = PokeHuntLog
 
-HPL.VERSION = "1.8.0"
+HPL.VERSION = "1.8.1"
 HPL.DB_VERSION = 1
 HPL.MAX_LEVEL = 60
 HPL.TAME_BEAST_SPELL_ID = 1515
@@ -284,6 +284,8 @@ local function SlashHandler(msg)
   elseif cmd == "tooltip" then
     HPL.db.settings.tooltip = not HPL.db.settings.tooltip
     HPL.Print("beast tooltips " .. (HPL.db.settings.tooltip and "on" or "off") .. ".")
+  elseif cmd == "version" then
+    HPL.Print("version " .. HPL.VERSION .. ".")
   elseif cmd == "help" then
     HPL.ShowHelp()
   elseif cmd == "move" then
@@ -326,6 +328,7 @@ local function SlashHandler(msg)
     HPL.Print("commands (type /petlog help for the how-to window):")
     HPL.Print("/petlog - open or close the log")
     HPL.Print("/petlog help - how to use PokeHuntLog")
+    HPL.Print("/petlog version - show which version you have")
     HPL.Print("/petlog uncaught - show or hide skins you haven't caught")
     HPL.Print("/petlog minimap - show or hide the minimap button")
     HPL.Print("/petlog notify - turn new skin messages on or off")

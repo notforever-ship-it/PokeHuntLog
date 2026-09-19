@@ -86,6 +86,7 @@ To remove a pet from the log, Shift-click **Forget pet**.
 |---|---|
 | `/petlog` | Open or close the log |
 | `/petlog help` | Open the How to use window |
+| `/petlog version` | Show which version you have |
 | `/petlog uncaught` | Show or hide skins you haven't caught |
 | `/petlog minimap` | Show or hide the minimap button |
 | `/petlog notify` | Turn "new skin" messages on or off |
@@ -157,6 +158,10 @@ So far the addon has been confirmed to load on Ravencraft, and the log window wo
 36. [ ] Taming a beast that teaches two abilities marks both as unlocked.
 
 ## Changelog
+
+### 1.8.1
+
+- Added `/petlog version`, which prints the version you have in chat. Handy for checking that a launcher update arrived.
 
 ### 1.8.0
 
