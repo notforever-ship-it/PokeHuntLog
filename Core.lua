@@ -4,7 +4,7 @@
 PokeHuntLog = {}
 local HPL = PokeHuntLog
 
-HPL.VERSION = "1.7.1"
+HPL.VERSION = "1.8.0"
 HPL.DB_VERSION = 1
 HPL.MAX_LEVEL = 60
 HPL.TAME_BEAST_SPELL_ID = 1515
@@ -166,6 +166,8 @@ local function NewDB()
       tooltip = true,
       ammoWarn = true,
       trainerReminder = true,
+      swingTimer = true,
+      arcaneReady = true,
     },
     pets = {},     -- [charKey] = { pet records }
     custom = {},   -- [skinId] = skins discovered in game that aren't in the bundled database
@@ -259,6 +261,16 @@ local function SlashHandler(msg)
     HPL.Print("feed reminder " .. (s.feedReminder and ("on, when your pet is " .. s.feedWhen .. " or worse") or "off") .. ".")
     HPL.UpdateHunterTools()
     if HPL.RefreshUI then HPL.RefreshUI() end
+  elseif cmd == "swing" then
+    HPL.db.settings.swingTimer = not HPL.db.settings.swingTimer
+    HPL.Print("swing timer " .. (HPL.db.settings.swingTimer and "on" or "off") .. ".")
+    HPL.UpdateHunterTools()
+    if HPL.RefreshUI then HPL.RefreshUI() end
+  elseif cmd == "arcane" then
+    HPL.db.settings.arcaneReady = not HPL.db.settings.arcaneReady
+    HPL.Print("Arcane Shot icon " .. (HPL.db.settings.arcaneReady and "on" or "off") .. ".")
+    HPL.UpdateHunterTools()
+    if HPL.RefreshUI then HPL.RefreshUI() end
   elseif cmd == "training" or cmd == "train" then
     HPL.ToggleTraining()
   elseif cmd == "trainer" then
@@ -326,7 +338,9 @@ local function SlashHandler(msg)
     HPL.Print("/petlog feed - turn the feed reminder on or off")
     HPL.Print("/petlog feed content | unhappy - when the feed reminder shows")
     HPL.Print("/petlog feed sound - turn the feed reminder sound on or off")
-    HPL.Print("/petlog move - unlock the range icon and feed reminder so you can drag them")
+    HPL.Print("/petlog swing - turn the Auto Shot and melee swing timer on or off")
+    HPL.Print("/petlog arcane - turn the Arcane Shot ready icon on or off")
+    HPL.Print("/petlog move - unlock the on-screen icons and bars so you can drag them")
     HPL.Print("/petlog scan - re-check your current pet")
     HPL.Print("/petlog unassign <pet name> - clear a pet's skin so you can pick it again")
     HPL.Print("/petlog forget <pet name> - remove a saved pet")
@@ -353,6 +367,7 @@ loader:SetScript("OnEvent", function()
   HPL.InitTooltip()
   HPL.InitTraining()
   HPL.InitHunterTools()
+  HPL.InitCombat()
 
   SLASH_POKEHUNTLOG1 = "/petlog"
   SLASH_POKEHUNTLOG2 = "/phl"

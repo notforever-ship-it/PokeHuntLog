@@ -4,8 +4,9 @@
 --   * With SuperWoW, UNIT_CASTEVENT tells us the player cast Tame Beast (spell 1515) and on which creature.
 --   * Without it, SPELLCAST_START / SPELLCAST_CHANNEL_START with the spell name "Tame Beast" does, and the
 --     current target is the beast.
---   Either way the beast's details are remembered, and when a pet with that name appears soon after
---   (UNIT_PET), it counts as a new tame.
+--   Either way the beast's details are remembered, and when a pet of that family and level appears soon
+--   after (UNIT_PET, or its name arriving), it counts as a new tame. The pet's own name is no help: here a
+--   new pet is named after its family, not the beast.
 
 local HPL = PokeHuntLog
 
@@ -59,24 +60,44 @@ local function ValidPetName(name)
   return name and name ~= "" and name ~= "Unknown" and name ~= UNKNOWNOBJECT
 end
 
--- Most recently seen pet of this character. Matched by GUID when SuperWoW is present, otherwise by
--- name and family.
-local function FindPet(list, name, family, guid)
+-- The saved record for a pet, and how it was found. Matched by GUID when SuperWoW is present, otherwise
+-- by name and family. A GUID only holds for one summon (part of it is a spawn counter), so a GUID miss
+-- proves nothing. Names do clash: on this server every new pet starts out named after its family
+-- ("Scorpid"). Pets only ever gain levels, so a namesake above this level is a different pet, and one at
+-- exactly this level is the likeliest match.
+local function FindPet(list, name, family, guid, level)
+  level = level or 0
   if guid then
     for i = 1, table.getn(list) do
-      if list[i].guid == guid then return list[i] end
+      if list[i].guid == guid then return list[i], "guid" end
     end
   end
-  local found
+  local found, foundScore
   for i = 1, table.getn(list) do
     local p = list[i]
-    if p.name == name and p.family == family then
-      if not found or (p.lastSeen or 0) >= (found.lastSeen or 0) then
-        found = p
+    if p.name == name and p.family == family and not (level > 0 and (p.level or 0) > level) then
+      local score = ((p.level or 0) == level) and 2 or 1
+      if not found or score > foundScore or
+        (score == foundScore and (p.lastSeen or 0) >= (found.lastSeen or 0)) then
+        found, foundScore = p, score
       end
     end
   end
-  return found
+  if found then return found, "name" end
+  return nil
+end
+
+-- Keep the first name a pet had, so the log can say what it used to be called.
+local function Rename(pet, name)
+  HPL.Debug("renamed " .. tostring(pet.name) .. " to " .. name)
+  if not pet.firstName then pet.firstName = pet.name end
+  pet.name = name
+end
+
+-- A tamed beast keeps its level. 0 means the pet's level hasn't loaded yet.
+local function LevelMatches(beastLevel, petLevel)
+  if not beastLevel or beastLevel <= 0 or petLevel == 0 then return true end
+  return beastLevel == petLevel
 end
 
 -- Attack power, damage and so on for the pet that is out. Read a couple of seconds after it appears,
@@ -123,7 +144,11 @@ function HPL.CapturePetDetails()
   local stats = ReadPetStats()
   if stats then pet.stats = stats end
   local spells = ReadPetSpells()
-  if table.getn(spells) > 0 then pet.spells = spells end
+  if table.getn(spells) > 0 then
+    pet.spells = spells
+    -- What it knew the first time we looked says which beast it was; training adds to it later.
+    if not pet.firstSpells then pet.firstSpells = spells end
+  end
   if HPL.RefreshUI then HPL.RefreshUI() end
 end
 
@@ -189,7 +214,7 @@ function HPL.ScanActivePet(source)
   local ctype = UnitCreatureType("pet") or "Beast"
   local guid = HPL.UnitGuid("pet")
   local now = GetTime()
-  local pet = FindPet(list, name, family, guid)
+  local pet, foundBy = FindPet(list, name, family, guid, level)
   local active = HPL.activePet
   local sameGuid = not guid or not activeGuid or guid == activeGuid
   activeGuid = guid
@@ -200,9 +225,8 @@ function HPL.ScanActivePet(source)
     local renamed = (renameTo and renameTo.name == name and now - renameTo.time < 30) or
       (source == "name" and level == (active.level or -1) and sameGuid)
     if renamed then
-      HPL.Debug("renamed " .. tostring(active.name) .. " to " .. name)
-      active.name = name
-      pet = active
+      Rename(active, name)
+      pet, foundBy = active, "rename"
       renameTo = nil
     end
   end
@@ -212,18 +236,26 @@ function HPL.ScanActivePet(source)
   end
 
   -- Work out whether this pet is a fresh tame. The pet is NOT named after the beast on this server
-  -- (taming a Clattering Scorpid gives a pet called "Scorpid"), so never match on the name: a Tame Beast
+  -- (taming a Clattering Scorpid gives a pet called "Scorpid"), so the name proves nothing: a Tame Beast
   -- cast on a beast of this family, moments ago, is the tame.
+  --   * A pet found by GUID, or just renamed, is one we already know.
+  --   * One found only by name may be an old namesake ("Scorpid" again), so it must also have the tamed
+  --     beast's level.
+  --   * The name event often arrives before UNIT_PET. It has to count, or the tame is filed as an
+  --     unknown pet and UNIT_PET then finds that record instead.
   local tame = nil
-  if pending and pending.family == family then
-    tame = pending
-  elseif not pet and lastBeast and now - lastBeast.time < 90 and lastBeast.family == family and
-    lastBeast.name == name then
-    -- Cast events were missed, but an unseen pet named exactly like the beast we just targeted is one.
-    tame = lastBeast
+  if foundBy ~= "guid" and foundBy ~= "rename" then
+    if pending and pending.family == family and (not pet or LevelMatches(pending.level, level)) then
+      tame = pending
+    elseif not pet and lastBeast and now - lastBeast.time < 90 and lastBeast.family == family and
+      (lastBeast.name == name or name == family) and LevelMatches(lastBeast.level, level) then
+      -- Cast events were missed, but a brand new pet still wearing its default name, with the family
+      -- and level of the beast we just targeted, is that beast.
+      tame = lastBeast
+    end
   end
 
-  if tame and source ~= "name" then
+  if tame then
     -- New tame.
     local skin, how = HPL.ResolveSkin(family, tame.name, tame.npcIds)
     if not skin then
@@ -233,10 +265,10 @@ function HPL.ScanActivePet(source)
     end
     local wasCaught = HPL.caught[skin] ~= nil
     HPL.Debug("new tame: " .. name .. " (" .. family .. ") -> skin " .. tostring(skin) .. " via " .. tostring(how) ..
-      (tame == pending and "" or " (from last target)"))
+      (tame == pending and "" or " (from last target)") .. (foundBy == "name" and ", not the old namesake" or ""))
     pet = {
       name = name, family = family, ctype = ctype, creature = tame.name, level = level,
-      tamedLevel = tame.level, tamed = time(), zone = tame.zone, witnessed = true, guid = guid,
+      tamedLevel = tame.level, firstLevel = level, tamed = time(), zone = tame.zone, witnessed = true, guid = guid,
       knows = HPL.knowsByCreature and HPL.knowsByCreature[string.lower(tame.name or "")] or nil,
       npcId = tame.npcIds and tame.npcIds[1], skin = skin, match = how, lastSeen = time(),
     }
@@ -254,7 +286,8 @@ function HPL.ScanActivePet(source)
     HPL.Debug("first time seeing pet " .. name .. " (" .. family .. ", level " .. level .. ", source " .. tostring(source) ..
       ", guid " .. tostring(guid) .. ") -> skin " .. tostring(skin) .. " via " .. tostring(how))
     pet = {
-      name = name, family = family, ctype = ctype, level = level, firstSeen = time(), witnessed = false,
+      name = name, family = family, ctype = ctype, level = level, firstLevel = level, firstSeen = time(),
+      witnessed = false,
       creature = (how == "name" or how == "ambiguous") and name or nil, guid = guid,
       skin = skin, match = how, lastSeen = time(),
     }
@@ -262,6 +295,8 @@ function HPL.ScanActivePet(source)
     HPL.activePet = pet
     Announce(pet, wasCaught)
   else
+    -- Found by GUID under its old name: renamed.
+    if foundBy == "guid" and pet.name ~= name then Rename(pet, name) end
     if level > (pet.level or 0) then
       HPL.Debug(name .. " level " .. tostring(pet.level) .. " -> " .. level)
       pet.level = level
@@ -288,7 +323,7 @@ local function ScanStable()
     -- Vanilla has 2 stable slots; pcall in case this server's client errors past the last one.
     local ok, _, name, level, family = pcall(GetStablePetInfo, slot)
     if ok and ValidPetName(name) and family then
-      local pet = FindPet(list, name, family)
+      local pet = FindPet(list, name, family, nil, level)
       HPL.Debug("stable slot " .. slot .. ": " .. name .. " (" .. family .. ", level " .. tostring(level) .. ")" ..
         (pet and "" or " - new to the log"))
       if pet then
@@ -354,6 +389,10 @@ function HPL.InitTracker()
       -- arg1 caster guid, arg2 target guid, arg3 "START"/"CAST"/"FAIL"/"CHANNEL", arg4 spell id
       if arg4 == HPL.TAME_BEAST_SPELL_ID and arg1 == HPL.UnitGuid("player") then
         HPL.Debug("UNIT_CASTEVENT Tame Beast: " .. tostring(arg3) .. ", target " .. tostring(arg2) .. ", duration " .. tostring(arg5))
+      end
+      if arg4 == HPL.TAME_BEAST_SPELL_ID and arg3 == "FAIL" and arg1 == HPL.UnitGuid("player") then
+        -- Interrupted or resisted: nothing was tamed, so a pet called soon after is not this beast.
+        pending = nil
       end
       if arg4 == HPL.TAME_BEAST_SPELL_ID and arg3 ~= "FAIL" and arg1 == HPL.UnitGuid("player") then
         if type(arg2) == "string" and UnitExists(arg2) then

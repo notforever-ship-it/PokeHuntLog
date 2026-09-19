@@ -25,6 +25,8 @@ It also adds two hunter helpers:
 - **Ability list** covering every pet ability: each rank's pet level and training point cost, which families can learn it, and the beasts that teach it.
 - **Training panel** showing your pet's unspent training points, what its family can learn, which ability ranks you have unlocked by taming, where to tame the next rank, and what your pet trainer has waiting.
 - **Feed reminder.** A happiness face pops up when your pet drops to Content (or only at Unhappy, if you prefer), with a chat message and a sound. Click it to cast Feed Pet, then click a food in your bags.
+- **Swing timer.** Bars counting down to your next Auto Shot and melee swing. The red end of the Auto Shot bar is the aim, when moving delays the shot.
+- **Arcane Shot icon** that lights up READY when Arcane Shot is off cooldown, you have the mana, and your target is in range.
 
 ## Quick start
 
@@ -33,7 +35,7 @@ It also adds two hunter helpers:
 3. **Need instructions in game?** Press **Help** at the bottom of the log, or type `/petlog help`.
 4. **Open your log** with `/petlog` or the beast icon on the minimap.
 5. **Add the pets you already have** by calling each one and opening the stable at a stable master once. New tames are added automatically.
-6. **Move the icons:** press **Unlock icons** at the bottom of the log, drag the range icon and feed reminder where you want them, then press **Lock icons**.
+6. **Move the icons:** press **Hunter tools** at the bottom left of the log, then **Unlock icons**. Drag the range icon, feed reminder, swing timer and Arcane Shot icon where you want them, then press **Lock icons**.
 
 Found a bug? See [Reporting bugs](#reporting-bugs).
 
@@ -61,19 +63,21 @@ Found a bug? See [Reporting bugs](#reporting-bugs).
 
 ### Pets the log can't identify
 
-The game doesn't tell addons which skin a pet has. The log works it out from the name of the beast you tamed. That can't work for pets you **renamed before installing the addon**, so they show up under **Pets with unknown skin**. To sort one out:
+The game doesn't tell addons which skin a pet has. The log works it out from the beast you tamed, so it can't know for pets tamed **before you installed the addon**. Those show up under **Pets with unknown skin**. To sort one out:
 
 1. Click the pet in the list.
-2. Press **Assign skin**.
-3. Click the matching skin in the list. It helps to have the pet summoned so you can compare it with the 3D view.
+2. If the log can tell which beast it came from, by the abilities it knew and its level, it shows a **Best guess** and a **Use guess** button. Press it.
+3. Otherwise press **Assign skin** and click the matching skin in the list. It helps to have the pet summoned so you can compare it with the 3D view.
 
 To remove a pet from the log, Shift-click **Forget pet**.
 
-### Range icon and feed reminder
+### Hunter tools: range icon, feed reminder, swing timer, Arcane Shot
 
-- Turn them on or off with the **Range icon** and **Feed reminder** checkboxes at the top of the log.
+- Press **Hunter tools** at the bottom left of the log to turn each one on or off.
+- **Swing timer:** the top bar counts down to your next Auto Shot and turns red for the last half second, the aim; stand still then or the shot is delayed. The bottom bar is your melee swing and hides when you leave melee. With SuperWoW it reads swings straight from the game; without it, it watches your ammo and the combat log.
+- **Arcane Shot icon:** shows while you target an enemy. It greys out with a countdown on cooldown, turns blue without the mana, red out of range, and says READY when you can fire.
 - The range icon needs **Auto Shot** on one of your action bars to be accurate. Put **Wing Clip** on a bar too and it can tell melee range apart from the dead zone. Hidden bars count.
-- To move them, press **Unlock icons** at the bottom of the log (or type `/petlog move`), drag them where you want, then press **Lock icons**. The feed reminder can also be Shift-dragged at any time.
+- To move them, press **Unlock icons** in Hunter tools (or type `/petlog move`), drag them where you want, then press **Lock icons**. The feed reminder can also be Shift-dragged at any time.
 - If you target something and Auto Shot isn't on your bars, the addon tells you once in chat. It does the same for Wing Clip from level 12.
 
 ### Commands
@@ -94,7 +98,9 @@ To remove a pet from the log, Shift-click **Forget pet**.
 | `/petlog feed` | Turn the feed reminder on or off |
 | `/petlog feed content` / `/petlog feed unhappy` | Remind when the pet is Content or worse (default), or only when Unhappy |
 | `/petlog feed sound` | Turn the reminder sound on or off |
-| `/petlog move` | Unlock or lock the range icon and feed reminder (same as the Unlock icons button) |
+| `/petlog swing` | Turn the swing timer on or off |
+| `/petlog arcane` | Turn the Arcane Shot icon on or off |
+| `/petlog move` | Unlock or lock the on-screen icons and bars (same as the Unlock icons button) |
 | `/petlog scan` | Re-check your current pet |
 | `/petlog unassign <pet name>` | Clear a pet's skin so you can pick it again |
 | `/petlog forget <pet name>` | Remove a saved pet |
@@ -151,6 +157,16 @@ So far the addon has been confirmed to load on Ravencraft, and the log window wo
 36. [ ] Taming a beast that teaches two abilities marks both as unlocked.
 
 ## Changelog
+
+### 1.8.0
+
+- **Fixed tames landing in "Pets with unknown skin".** The pet's name often arrives a moment before the game says a new pet appeared, and the log ignored the tame when that happened, filing the pet as unknown. It also let an old pet with the same default name (every new scorpid is called "Scorpid") swallow a new tame. A tame now counts whichever arrives first, and a namesake has to match the tamed beast's level.
+- Renaming a pet with SuperWoW now updates the log, and the pet remembers the name it was first called.
+- **Best guess for unknown pets:** the log works out which beast a pet came from by the abilities it knew and its level, and offers a **Use guess** button when only one skin fits.
+- **Swing timer** for Auto Shot and melee, with the Auto Shot aim marked in red.
+- **Arcane Shot icon** that says READY when it's off cooldown, you have the mana and the target is in range.
+- New **Hunter tools** button at the bottom left holds the range, feed, swing timer and Arcane Shot switches and the icon lock, which frees up room for a wider Search box.
+- Fixed "tameable now" and the teacher order for beasts with a level range starting below 10, like "9-10". Those were read as level 0.
 
 ### 1.7.1
 

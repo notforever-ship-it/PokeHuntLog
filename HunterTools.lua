@@ -47,11 +47,9 @@ HPL.movingIcons = false
 -- Shared icon frame
 ------------------------------------------------------------------------------------------------
 
-local function CreateIcon(name, positionKey, defaultY, size)
-  local f = CreateFrame("Button", name, UIParent)
-  f:SetWidth(size)
-  f:SetHeight(size)
-  f:SetFrameStrata("MEDIUM")
+-- Put a frame where the player last left it, and let it be dragged while the icons are unlocked
+-- (or with Shift held).
+function HPL.MakeDraggable(f, positionKey, defaultY)
   f:SetMovable(true)
   f:SetClampedToScreen(true)
   f:RegisterForDrag("LeftButton")
@@ -71,6 +69,14 @@ local function CreateIcon(name, positionKey, defaultY, size)
     local point, _, relPoint, x, y = this:GetPoint()
     HPL.db.settings[positionKey] = { point = point, relPoint = relPoint, x = x, y = y }
   end)
+end
+
+function HPL.CreateIcon(name, positionKey, defaultY, size)
+  local f = CreateFrame("Button", name, UIParent)
+  f:SetWidth(size)
+  f:SetHeight(size)
+  f:SetFrameStrata("MEDIUM")
+  HPL.MakeDraggable(f, positionKey, defaultY)
 
   f.icon = f:CreateTexture(nil, "ARTWORK")
   f.icon:SetAllPoints(f)
@@ -88,6 +94,7 @@ local function CreateIcon(name, positionKey, defaultY, size)
   f:Hide()
   return f
 end
+local CreateIcon = HPL.CreateIcon
 
 local function SetColor(f, state)
   f.glow:SetVertexColor(state.r, state.g, state.b)
@@ -129,6 +136,15 @@ end
 
 local function HasAttackableTarget()
   return UnitExists("target") and not UnitIsDead("target") and UnitCanAttack("player", "target")
+end
+HPL.HasAttackableTarget = HasAttackableTarget
+
+-- Is the target in Auto Shot range? nil when Auto Shot isn't on a bar, so callers can tell
+-- "out of range" from "can't tell".
+function HPL.AutoShotInRange()
+  if slotsDirty and GetTime() - lastSlotScan > 1 then ScanActionSlots() end
+  if not slots.autoShot then return nil end
+  return IsActionInRange(slots.autoShot) == 1
 end
 
 local function RangeState()
@@ -304,13 +320,15 @@ end
 function HPL.UpdateHunterTools()
   UpdateRange()
   UpdateFeed(false)
+  if HPL.UpdateCombatTools then HPL.UpdateCombatTools() end
 end
 
 function HPL.ToggleMoveIcons()
   HPL.movingIcons = not HPL.movingIcons
   if rangeFrame then rangeFrame:EnableMouse(HPL.movingIcons) end
   if HPL.movingIcons then
-    HPL.Print("icons unlocked: drag the range icon and feed reminder where you want them, then press Lock icons.")
+    HPL.Print("icons unlocked: drag the range icon, feed reminder, swing timer and Arcane Shot icon where you " ..
+      "want them, then press Lock icons.")
   else
     HPL.Print("icons locked.")
   end

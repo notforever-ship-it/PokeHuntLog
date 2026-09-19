@@ -8,6 +8,7 @@ local DETAIL_WIDTH = 276
 local MAX_WHERE_LINES = 6
 
 local frame, scroll, detail, emptyText, summaryText, uncaughtCheck, rangeCheck, feedCheck, lockButton, searchBox
+local swingCheck, arcaneCheck, toolsButton, toolsPanel
 local buttons = {}
 HPL.rows = {}
 HPL.selected = nil      -- { kind = "skin", id = skinId } or { kind = "pet", pet = petRecord, charKey = key }
@@ -297,7 +298,7 @@ end
 -- One "where to tame" line: creature, level, rare or elite tag, fast attack speed, zone.
 local function NpcLine(npc)
   local playerLevel = UnitLevel("player") or 0
-  local low = tonumber(string.sub(npc[3] or "", 1, 2)) or 0
+  local low = HPL.LowLevel(npc[3])
   local extra = ""
   if npc[3] and npc[3] ~= "" then extra = extra .. " " .. npc[3] end
   if npc[5] and npc[5] ~= "" then extra = extra .. " " .. npc[5] end
@@ -352,6 +353,7 @@ function HPL.RowTooltip(btn)
   elseif r.kind == "pet" then
     GameTooltip:SetText(tostring(r.pet.name))
     if r.pet.creature then GameTooltip:AddLine("Tamed from " .. r.pet.creature, 0.8, 0.8, 0.8) end
+    if r.pet.firstName then GameTooltip:AddLine("First called " .. r.pet.firstName, 0.8, 0.8, 0.8) end
     local stats = StatsText(r.pet.stats)
     if stats then GameTooltip:AddLine(stats, 1, 1, 1) end
   else
@@ -462,7 +464,7 @@ local function SkinText(def)
   return table.concat(lines, "\n")
 end
 
-local function PetText(sel)
+local function PetText(sel, guesses)
   local pet = sel.pet
   local lines = {}
   Line(lines, GREY .. tostring(pet.ctype or "Beast") .. " / " .. tostring(pet.family) .. END)
@@ -470,6 +472,9 @@ local function PetText(sel)
   Line(lines, GOLD .. "Hunter: " .. END .. HPL.CharName(sel.charKey))
   if pet.creature then
     Line(lines, GOLD .. "Tamed from: " .. END .. pet.creature)
+  end
+  if pet.firstName then
+    Line(lines, GOLD .. "First called: " .. END .. pet.firstName)
   end
   if pet.firstSeen or pet.tamed then
     Line(lines, GOLD .. "First logged: " .. END .. HPL.FormatDate(pet.tamed or pet.firstSeen))
@@ -488,11 +493,33 @@ local function PetText(sel)
     Line(lines, GREEN .. "Click one of the " .. tostring(pet.family) .. " skins in the list." .. END)
     Line(lines, GREY .. "Summon the pet to compare it with the 3D view. Right-click the list to cancel." .. END)
   else
-    Line(lines, "The log couldn't tell which skin this pet has. It was probably tamed before the addon " ..
-      "was installed, or renamed while it was turned off.")
-    Line(lines, " ")
-    Line(lines, "Press " .. WHITE .. "Assign skin" .. END .. " and pick the matching " .. tostring(pet.family) ..
-      " skin from the list.")
+    local level = pet.firstLevel or pet.level or 0
+    if table.getn(guesses) == 1 then
+      local g = guesses[1]
+      local names = {}
+      for i = 1, math.min(table.getn(g.npcs), 2) do
+        table.insert(names, g.npcs[i][2] .. " (" .. g.npcs[i][3] .. ", " .. g.npcs[i][4] .. ")")
+      end
+      Line(lines, GOLD .. "Best guess: " .. END .. GREEN .. HPL.skinsById[g.skin].name .. END)
+      Line(lines, GREY .. "At level " .. level .. " it knew what only " .. table.concat(names, " or ") ..
+        " teaches." .. END)
+      Line(lines, " ")
+      Line(lines, "Press " .. WHITE .. "Use guess" .. END .. " to log it as that, or " .. WHITE .. "Assign skin" .. END ..
+        " to pick one yourself.")
+    else
+      if table.getn(guesses) > 1 then
+        local names = {}
+        for i = 1, table.getn(guesses) do table.insert(names, HPL.skinsById[guesses[i].skin].name) end
+        Line(lines, GOLD .. "Could be: " .. END .. table.concat(names, ", "))
+        Line(lines, GREY .. "going by what it knew at level " .. level .. "." .. END)
+      else
+        Line(lines, "The log couldn't tell which skin this pet has. It was probably tamed before the addon " ..
+          "was installed, or renamed while it was turned off.")
+      end
+      Line(lines, " ")
+      Line(lines, "Press " .. WHITE .. "Assign skin" .. END .. " and pick the matching " .. tostring(pet.family) ..
+        " skin from the list.")
+    end
   end
   return table.concat(lines, "\n")
 end
@@ -537,6 +564,7 @@ function HPL.UpdateDetail()
   HPL.selected = sel
 
   detail.assign:Hide()
+  detail.guess:Hide()
   detail.forget:Hide()
   if not sel then
     detail.title:SetText("Your collection")
@@ -546,11 +574,16 @@ function HPL.UpdateDetail()
     detail.title:SetText(def.name)
     detail.text:SetText(SkinText(def))
   else
+    local guesses = HPL.GuessSkin(sel.pet)
     detail.title:SetText(tostring(sel.pet.name))
-    detail.text:SetText(PetText(sel))
+    detail.text:SetText(PetText(sel, guesses))
     detail.assign:SetText(HPL.assigning == sel.pet and "Cancel" or "Assign skin")
     detail.assign:Show()
     detail.forget:Show()
+    if table.getn(guesses) == 1 and HPL.assigning ~= sel.pet then
+      detail.guess.skin = guesses[1].skin
+      detail.guess:Show()
+    end
   end
   HPL.RefreshModel()
 end
@@ -563,6 +596,8 @@ function HPL.RefreshUI()
   uncaughtCheck:SetChecked(HPL.db.settings.showUncaught)
   rangeCheck:SetChecked(HPL.db.settings.rangeIcon)
   feedCheck:SetChecked(HPL.db.settings.feedReminder)
+  swingCheck:SetChecked(HPL.db.settings.swingTimer)
+  arcaneCheck:SetChecked(HPL.db.settings.arcaneReady)
   HPL.BuildRows()
   HPL.UpdateDetail()
   HPL.UpdateList()
@@ -748,24 +783,64 @@ local function CreateWindow()
   credit:SetPoint("BOTTOM", frame, "BOTTOM", 0, 46)
   credit:SetText(GREY .. "Made by " .. END .. "|cffabd473stealthzi" .. END .. GREY .. "   v" .. HPL.VERSION .. END)
 
-  lockButton = CreateFrame("Button", "PokeHuntLogLockButton", frame, "UIPanelButtonTemplate")
-  lockButton:SetWidth(110)
+  toolsButton = CreateFrame("Button", "PokeHuntLogToolsButton", frame, "UIPanelButtonTemplate")
+  toolsButton:SetWidth(110)
+  toolsButton:SetHeight(22)
+  toolsButton:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", 18, 18)
+  toolsButton:SetText("Hunter tools")
+  toolsButton:SetScript("OnClick", function()
+    if toolsPanel:IsShown() then toolsPanel:Hide() else toolsPanel:Show() end
+  end)
+  Explain(toolsButton, "Hunter tools", "Turn the range icon, feed reminder, swing timer and Arcane Shot icon " ..
+    "on or off, and unlock them to move.")
+
+  -- The on-screen helpers, and the lock that lets them be dragged.
+  toolsPanel = CreateFrame("Frame", "PokeHuntLogToolsPanel", frame)
+  toolsPanel:SetWidth(200)
+  toolsPanel:SetHeight(146)
+  toolsPanel:SetPoint("BOTTOMLEFT", toolsButton, "TOPLEFT", -4, 4)
+  Backdrop(toolsPanel, false)
+  toolsPanel:SetFrameLevel(frame:GetFrameLevel() + 10)
+  toolsPanel:EnableMouse(true)
+  toolsPanel:Hide()
+
+  local function ToolCheck(name, label, key, y, tipTitle, tipText)
+    local c = CreateFrame("CheckButton", name, toolsPanel, "UICheckButtonTemplate")
+    c:SetWidth(24)
+    c:SetHeight(24)
+    c:SetPoint("TOPLEFT", toolsPanel, "TOPLEFT", 10, y)
+    local text = getglobal(name .. "Text")
+    if text then text:SetText(label) end
+    Explain(c, tipTitle, tipText)
+    c:SetScript("OnClick", function()
+      HPL.db.settings[key] = this:GetChecked() and true or false
+      HPL.UpdateHunterTools()
+    end)
+    return c
+  end
+  rangeCheck = ToolCheck("PokeHuntLogRangeCheck", "Range icon", "rangeIcon", -8, "Range icon",
+    "Shows whether your target is in Auto Shot range, the dead zone, or melee range.")
+  feedCheck = ToolCheck("PokeHuntLogFeedCheck", "Feed reminder", "feedReminder", -32, "Feed reminder",
+    "Shows a happiness face when your pet stops being happy. Click it to feed.")
+  swingCheck = ToolCheck("PokeHuntLogSwingCheck", "Swing timer", "swingTimer", -56, "Swing timer",
+    "Bars counting down to your next Auto Shot and melee swing. The red end of the Auto Shot bar is the aim: " ..
+    "stand still then or the shot is delayed.")
+  arcaneCheck = ToolCheck("PokeHuntLogArcaneCheck", "Arcane Shot ready", "arcaneReady", -80, "Arcane Shot icon",
+    "Lights up when Arcane Shot is off cooldown, you have the mana, and your target is in range.")
+
+  lockButton = CreateFrame("Button", "PokeHuntLogLockButton", toolsPanel, "UIPanelButtonTemplate")
+  lockButton:SetWidth(170)
   lockButton:SetHeight(22)
-  lockButton:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", 18, 18)
+  lockButton:SetPoint("BOTTOM", toolsPanel, "BOTTOM", 0, 12)
   lockButton:SetText(HPL.movingIcons and "Lock icons" or "Unlock icons")
   lockButton:SetScript("OnClick", function() HPL.ToggleMoveIcons() end)
-  lockButton:SetScript("OnEnter", function()
-    GameTooltip:SetOwner(this, "ANCHOR_TOP")
-    GameTooltip:SetText("Move the range icon and feed reminder")
-    GameTooltip:AddLine("Unlock, drag them where you want, then lock again.", 1, 1, 1, 1)
-    GameTooltip:Show()
-  end)
-  lockButton:SetScript("OnLeave", function() GameTooltip:Hide() end)
+  Explain(lockButton, "Move the icons", "Unlock, drag the range icon, feed reminder, swing timer and " ..
+    "Arcane Shot icon where you want them, then lock again.")
 
   local collapseButton = CreateFrame("Button", "PokeHuntLogCollapseButton", frame, "UIPanelButtonTemplate")
   collapseButton:SetWidth(110)
   collapseButton:SetHeight(22)
-  collapseButton:SetPoint("LEFT", lockButton, "RIGHT", 8, 0)
+  collapseButton:SetPoint("LEFT", toolsButton, "RIGHT", 8, 0)
   collapseButton:SetText("Collapse all")
   collapseButton:SetScript("OnClick", function() HPL.ToggleCollapseAll() end)
 
@@ -801,7 +876,7 @@ local function CreateWindow()
   searchLabel:SetText(GREY .. "Search" .. END)
 
   searchBox = CreateFrame("EditBox", "PokeHuntLogSearchBox", frame, "InputBoxTemplate")
-  searchBox:SetWidth(110)
+  searchBox:SetWidth(190)
   searchBox:SetHeight(18)
   searchBox:SetPoint("TOPLEFT", frame, "TOPLEFT", 266, -44)
   searchBox:SetAutoFocus(false)
@@ -819,7 +894,7 @@ local function CreateWindow()
   uncaughtCheck = CreateFrame("CheckButton", "PokeHuntLogUncaughtCheck", frame, "UICheckButtonTemplate")
   uncaughtCheck:SetWidth(24)
   uncaughtCheck:SetHeight(24)
-  uncaughtCheck:SetPoint("TOPLEFT", frame, "TOPLEFT", 396, -42)
+  uncaughtCheck:SetPoint("TOPLEFT", frame, "TOPLEFT", 490, -42)
   local checkLabel = getglobal("PokeHuntLogUncaughtCheckText")
   if checkLabel then
     checkLabel:SetText("Uncaught")
@@ -828,30 +903,6 @@ local function CreateWindow()
   uncaughtCheck:SetScript("OnClick", function()
     HPL.db.settings.showUncaught = this:GetChecked() and true or false
     HPL.Changed()
-  end)
-
-  rangeCheck = CreateFrame("CheckButton", "PokeHuntLogRangeCheck", frame, "UICheckButtonTemplate")
-  rangeCheck:SetWidth(24)
-  rangeCheck:SetHeight(24)
-  rangeCheck:SetPoint("TOPLEFT", frame, "TOPLEFT", 500, -42)
-  local rangeLabel = getglobal("PokeHuntLogRangeCheckText")
-  if rangeLabel then rangeLabel:SetText("Range") end
-  Explain(rangeCheck, "Range icon", "Shows whether your target is in Auto Shot range, the dead zone, or melee range.")
-  rangeCheck:SetScript("OnClick", function()
-    HPL.db.settings.rangeIcon = this:GetChecked() and true or false
-    HPL.UpdateHunterTools()
-  end)
-
-  feedCheck = CreateFrame("CheckButton", "PokeHuntLogFeedCheck", frame, "UICheckButtonTemplate")
-  feedCheck:SetWidth(24)
-  feedCheck:SetHeight(24)
-  feedCheck:SetPoint("TOPLEFT", frame, "TOPLEFT", 590, -42)
-  local feedLabel = getglobal("PokeHuntLogFeedCheckText")
-  if feedLabel then feedLabel:SetText("Feed") end
-  Explain(feedCheck, "Feed reminder", "Shows a happiness face when your pet stops being happy. Click it to feed.")
-  feedCheck:SetScript("OnClick", function()
-    HPL.db.settings.feedReminder = this:GetChecked() and true or false
-    HPL.UpdateHunterTools()
   end)
 
   -- List
@@ -926,7 +977,7 @@ local function CreateWindow()
   detail.text:SetJustifyV("TOP")
 
   detail.assign = CreateFrame("Button", "PokeHuntLogAssignButton", detail, "UIPanelButtonTemplate")
-  detail.assign:SetWidth(104)
+  detail.assign:SetWidth(84)
   detail.assign:SetHeight(22)
   detail.assign:SetPoint("BOTTOMLEFT", detail, "BOTTOMLEFT", 8, 8)
   detail.assign:SetText("Assign skin")
@@ -942,8 +993,24 @@ local function CreateWindow()
     HPL.RefreshUI()
   end)
 
+  detail.guess = CreateFrame("Button", "PokeHuntLogGuessButton", detail, "UIPanelButtonTemplate")
+  detail.guess:SetWidth(84)
+  detail.guess:SetHeight(22)
+  detail.guess:SetPoint("LEFT", detail.assign, "RIGHT", 4, 0)
+  detail.guess:SetText("Use guess")
+  detail.guess:SetScript("OnClick", function()
+    local sel = HPL.selected
+    local def = this.skin and HPL.skinsById[this.skin]
+    if not sel or sel.kind ~= "pet" or not def then return end
+    sel.pet.skin = this.skin
+    sel.pet.match = "guess"
+    HPL.Print(tostring(sel.pet.name) .. " is now logged as " .. def.name .. ".")
+    HPL.selected = { kind = "skin", id = this.skin }
+    HPL.Changed()
+  end)
+
   detail.forget = CreateFrame("Button", "PokeHuntLogForgetButton", detail, "UIPanelButtonTemplate")
-  detail.forget:SetWidth(104)
+  detail.forget:SetWidth(84)
   detail.forget:SetHeight(22)
   detail.forget:SetPoint("BOTTOMRIGHT", detail, "BOTTOMRIGHT", -8, 8)
   detail.forget:SetText("Forget pet")

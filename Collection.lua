@@ -27,6 +27,63 @@ HPL.TRAINER_ABILITIES = {
   ["Great Stamina"] = true, ["Natural Armor"] = true, ["Growl"] = true,
 }
 
+-- The bottom of a level range: "9-10" -> 9, "60" -> 60, "" -> 0.
+function HPL.LowLevel(text)
+  local _, _, low = string.find(text or "", "^(%d+)")
+  return tonumber(low) or 0
+end
+
+-- For a pet the log couldn't place, which skins could it be? A beast teaches its abilities when tamed,
+-- so the pet must know every ability rank the beast knows, and can't be below the beast's level.
+-- Judged on what the pet knew the first time the log saw it; later training only adds to that.
+-- Returns { { skin = id, npcs = { npc, ... } }, ... } sorted by skin name; empty when nothing fits.
+function HPL.GuessSkin(pet)
+  local known, any = {}, false
+  local spells = pet.firstSpells or pet.spells or {}
+  for i = 1, table.getn(spells) do
+    -- "Scorpid Poison Rank 1" in the spellbook is "Scorpid Poison 1" in the data
+    local _, _, ability, rank = string.find(spells[i], "^(.-)%s+Rank%s+(%d+)$")
+    if ability then
+      known[string.lower(ability) .. " " .. rank] = true
+      any = true
+    end
+  end
+  if not any then return {} end
+
+  -- The beast that explains the most of what the pet knew wins: a pet knowing Claw 2 and Scorpid Poison 1
+  -- came from a beast teaching both, not from one teaching only the poison.
+  local level = pet.firstLevel or pet.level or 0
+  local bySkin, out, best = {}, {}, 0
+  for id, def in pairs(HPL.skinsById) do
+    if def.family == pet.family then
+      local npcs = def.npcs or {}
+      for i = 1, table.getn(npcs) do
+        local taught = HPL.ParseKnows(npcs[i][7])
+        if table.getn(taught) > 0 and (level == 0 or HPL.LowLevel(npcs[i][3]) <= level) then
+          local fits = true
+          for t = 1, table.getn(taught) do
+            if not known[string.lower(taught[t].name) .. " " .. taught[t].rank] then fits = false end
+          end
+          local score = table.getn(taught)
+          if fits and score > best then
+            best = score
+            bySkin, out = {}, {}
+          end
+          if fits and score == best then
+            if not bySkin[id] then
+              bySkin[id] = { skin = id, npcs = {} }
+              table.insert(out, bySkin[id])
+            end
+            table.insert(bySkin[id].npcs, npcs[i])
+          end
+        end
+      end
+    end
+  end
+  table.sort(out, function(a, b) return HPL.skinsById[a.skin].name < HPL.skinsById[b.skin].name end)
+  return out
+end
+
 -- A creature can teach more than one ability: "Bite 2 , Furious Howl 1". Returns { {name, rank}, ... }.
 function HPL.ParseKnows(text)
   local out = {}
@@ -112,7 +169,7 @@ local function Register(def)
           if not HPL.teachers[slot] then HPL.teachers[slot] = {} end
           table.insert(HPL.teachers[slot], {
             name = npcName, level = npcs[i][3], zone = npcs[i][4], tag = npcs[i][5],
-            lowLevel = tonumber(string.sub(npcs[i][3] or "", 1, 2)) or 0,
+            lowLevel = HPL.LowLevel(npcs[i][3]),
           })
         end
       end

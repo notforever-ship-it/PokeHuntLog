@@ -21,8 +21,9 @@ local HELP_TEXT = table.concat({
   "- " .. WHITE .. "Search" .. END .. " filters by skin, creature or zone, for example " .. WHITE .. "durotar" .. END .. ".",
   "- Hover a family for its role, stat modifiers, abilities and diet. Hover a skin for your best pet's stats.",
   "- " .. WHITE .. "Export" .. END .. " gives you the whole collection as text to paste into Discord.",
-  "- A pet under " .. ORANGE .. "Pets with unknown skin" .. END .. ": click it, press " .. WHITE .. "Assign skin" .. END ..
-    ", then click its skin in the list.",
+  "- A pet under " .. ORANGE .. "Pets with unknown skin" .. END .. ": click it. If the log can work out which beast " ..
+    "it was from what it knows, press " .. WHITE .. "Use guess" .. END .. ". Otherwise press " .. WHITE .. "Assign skin" .. END ..
+    " and click its skin in the list.",
   " ",
   GOLD .. "Range icon" .. END,
   "- " .. WHITE .. "Put Auto Shot and Wing Clip on your action bars." .. END .. " Any slot works, even a bar page you never show. " ..
@@ -49,8 +50,16 @@ local HELP_TEXT = table.concat({
     WHITE .. "Happy" .. END .. " most of the food is wasted.",
   "- You are warned in chat when you are down to 200 and 50 shots.",
   " ",
-  GOLD .. "Moving the icons" .. END,
-  "- Press " .. WHITE .. "Unlock icons" .. END .. ", drag the range icon and the feed reminder, then press " ..
+  GOLD .. "Swing timer and Arcane Shot" .. END,
+  "- Two bars count down to your next " .. WHITE .. "Auto Shot" .. END .. " and melee swing. The " .. RED .. "red" .. END ..
+    " end of the Auto Shot bar is the aim: stand still then, or the shot is delayed.",
+  "- The " .. WHITE .. "Arcane Shot" .. END .. " icon lights up " .. GREEN .. "READY" .. END ..
+    " when it is off cooldown, you have the mana and your target is in range.",
+  " ",
+  GOLD .. "Hunter tools and moving the icons" .. END,
+  "- " .. WHITE .. "Hunter tools" .. END .. " (bottom left of the log) turns the range icon, feed reminder, swing timer " ..
+    "and Arcane Shot icon on or off.",
+  "- In it, press " .. WHITE .. "Unlock icons" .. END .. ", drag them where you want, then press " ..
     WHITE .. "Lock icons" .. END .. ".",
   " ",
   GOLD .. "Commands" .. END,
@@ -58,6 +67,7 @@ local HELP_TEXT = table.concat({
   WHITE .. "/petlog move" .. END .. " - unlock or lock the icons",
   WHITE .. "/petlog range" .. END .. ", " .. WHITE .. "/petlog feed" .. END .. " - turn the range icon or feed reminder on/off",
   WHITE .. "/petlog feed unhappy" .. END .. " - only remind when the pet is unhappy",
+  WHITE .. "/petlog swing" .. END .. ", " .. WHITE .. "/petlog arcane" .. END .. " - swing timer or Arcane Shot icon on/off",
   WHITE .. "/petlog uncaught" .. END .. " - show or hide skins you haven't caught",
   WHITE .. "/petlog tooltip" .. END .. " - turn the beast tooltip line on or off",
   WHITE .. "/petlog export" .. END .. " - collection as text     " .. WHITE .. "/petlog ammo" .. END .. " - ammo warnings on/off",
