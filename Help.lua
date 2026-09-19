@@ -25,13 +25,6 @@ local HELP_TEXT = table.concat({
     "it was from what it knows, press " .. WHITE .. "Use guess" .. END .. ". Otherwise press " .. WHITE .. "Assign skin" .. END ..
     " and click its skin in the list.",
   " ",
-  GOLD .. "Range icon" .. END,
-  "- " .. WHITE .. "Put Auto Shot and Wing Clip on your action bars." .. END .. " Any slot works, even a bar page you never show. " ..
-    "Drag the real spells from your spellbook; macros don't count.",
-  "- " .. GREEN .. "In range" .. END .. "   " .. RED .. "Dead zone" .. END .. "   " .. ORANGE .. "Melee" .. END .. "   " ..
-    GREY .. "Out of range" .. END,
-  "- Without Wing Clip (learned at level 12) it can only say " .. RED .. "Too close" .. END .. ".",
-  " ",
   GOLD .. "Training" .. END,
   "- " .. WHITE .. "Training" .. END .. " shows your pet's unspent training points, what its family can learn, " ..
     "which ranks you have unlocked by taming, and where to tame the next one.",
@@ -44,48 +37,21 @@ local HELP_TEXT = table.concat({
     WHITE .. "Balanced" .. END .. " is in between, and gorillas are " .. WHITE .. "AoE tank" .. END ..
     " because Thunderstomp grabs everything nearby.",
   " ",
-  GOLD .. "Feed reminder" .. END,
-  "- A happiness face pops up when your pet stops being happy. Click it to cast Feed Pet, then click a food in your bags.",
-  "- Hover the face: at " .. WHITE .. "Content" .. END .. " a full meal fits with nothing wasted; at " ..
-    WHITE .. "Happy" .. END .. " most of the food is wasted.",
-  "- You are warned in chat when you are down to 200 and 50 shots.",
-  " ",
-  GOLD .. "Swing timer and Arcane Shot" .. END,
-  "- Two bars count down to your next " .. WHITE .. "Auto Shot" .. END .. " and melee swing. The " .. RED .. "red" .. END ..
-    " end of the Auto Shot bar is the aim: stand still then, or the shot is delayed.",
-  "- The " .. WHITE .. "Arcane Shot" .. END .. " icon lights up " .. GREEN .. "READY" .. END ..
-    " when it is off cooldown, you have the mana and your target is in range.",
-  " ",
-  GOLD .. "Hunter tools and moving the icons" .. END,
-  "- " .. WHITE .. "Hunter tools" .. END .. " (bottom left of the log) turns the range icon, feed reminder, swing timer " ..
-    "and Arcane Shot icon on or off.",
-  "- In it, press " .. WHITE .. "Unlock icons" .. END .. ", drag them where you want, then press " ..
-    WHITE .. "Lock icons" .. END .. ".",
+  GOLD .. "Range icon, feed reminder, swing timer" .. END,
+  "- These moved to " .. WHITE .. "Class Toolkit" .. END .. ", a separate addon with tools for every class. " ..
+    "Install it next to PokeHuntLog and type " .. WHITE .. "/ctk" .. END .. ".",
   " ",
   GOLD .. "Commands" .. END,
   WHITE .. "/petlog" .. END .. " - open the log      " .. WHITE .. "/petlog help" .. END .. " - this window",
-  WHITE .. "/petlog move" .. END .. " - unlock or lock the icons",
-  WHITE .. "/petlog range" .. END .. ", " .. WHITE .. "/petlog feed" .. END .. " - turn the range icon or feed reminder on/off",
-  WHITE .. "/petlog feed unhappy" .. END .. " - only remind when the pet is unhappy",
-  WHITE .. "/petlog swing" .. END .. ", " .. WHITE .. "/petlog arcane" .. END .. " - swing timer or Arcane Shot icon on/off",
   WHITE .. "/petlog uncaught" .. END .. " - show or hide skins you haven't caught",
   WHITE .. "/petlog tooltip" .. END .. " - turn the beast tooltip line on or off",
-  WHITE .. "/petlog export" .. END .. " - collection as text     " .. WHITE .. "/petlog ammo" .. END .. " - ammo warnings on/off",
+  WHITE .. "/petlog export" .. END .. " - your collection as text",
   WHITE .. "/petlog training" .. END .. " - the training panel     " .. WHITE .. "/petlog trainer" .. END .. " - reminders on/off",
   WHITE .. "/petlog commands" .. END .. " - list every command in chat",
   WHITE .. "/petlog debug on" .. END .. " - show what the addon notices in chat (handy for bug reports)",
 }, "\n")
 
-local frame, lockButton
-
-local function LockText()
-  return HPL.movingIcons and "Lock icons" or "Unlock icons"
-end
-
-function HPL.UpdateLockButtons()
-  if lockButton then lockButton:SetText(LockText()) end
-  if HPL.UpdateLogLockButton then HPL.UpdateLogLockButton() end
-end
+local frame
 
 local function CreateHelp()
   frame = CreateFrame("Frame", "PokeHuntLogHelpFrame", UIParent)
@@ -128,12 +94,6 @@ local function CreateHelp()
   text:SetJustifyV("TOP")
   text:SetText(HELP_TEXT)
 
-  lockButton = CreateFrame("Button", "PokeHuntLogHelpLockButton", frame, "UIPanelButtonTemplate")
-  lockButton:SetWidth(120)
-  lockButton:SetHeight(24)
-  lockButton:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", 24, 20)
-  lockButton:SetScript("OnClick", function() HPL.ToggleMoveIcons() end)
-
   local ok = CreateFrame("Button", "PokeHuntLogHelpOkButton", frame, "UIPanelButtonTemplate")
   ok:SetWidth(120)
   ok:SetHeight(24)
@@ -148,7 +108,6 @@ end
 
 function HPL.ShowHelp()
   if not frame then CreateHelp() end
-  lockButton:SetText(LockText())
   frame:Show()
 end
 

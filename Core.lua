@@ -4,7 +4,7 @@
 PokeHuntLog = {}
 local HPL = PokeHuntLog
 
-HPL.VERSION = "1.8.2"
+HPL.VERSION = "2.0.0"
 HPL.DB_VERSION = 1
 HPL.MAX_LEVEL = 60
 HPL.TAME_BEAST_SPELL_ID = 1515
@@ -159,15 +159,8 @@ local function NewDB()
       minimapHidden = false,
       collapsed = {},
       debug = false,
-      rangeIcon = true,
-      feedReminder = true,
-      feedWhen = "content",   -- "content": remind as soon as the pet isn't happy; "unhappy": only when unhappy
-      feedSound = true,
       tooltip = true,
-      ammoWarn = true,
       trainerReminder = true,
-      swingTimer = true,
-      arcaneReady = true,
     },
     pets = {},     -- [charKey] = { pet records }
     custom = {},   -- [skinId] = skins discovered in game that aren't in the bundled database
@@ -242,35 +235,8 @@ local function SlashHandler(msg)
   elseif cmd == "notify" then
     HPL.db.settings.notify = not HPL.db.settings.notify
     HPL.Print("new skin messages " .. (HPL.db.settings.notify and "on" or "off") .. ".")
-  elseif cmd == "range" then
-    HPL.db.settings.rangeIcon = not HPL.db.settings.rangeIcon
-    HPL.Print("range icon " .. (HPL.db.settings.rangeIcon and "on" or "off") .. ".")
-    HPL.UpdateHunterTools()
-    if HPL.RefreshUI then HPL.RefreshUI() end
-  elseif cmd == "feed" then
-    local s = HPL.db.settings
-    if rest == "content" or rest == "unhappy" then
-      s.feedWhen = rest
-      s.feedReminder = true
-    elseif rest == "sound" then
-      s.feedSound = not s.feedSound
-      HPL.Print("feed reminder sound " .. (s.feedSound and "on" or "off") .. ".")
-    else
-      s.feedReminder = not s.feedReminder
-    end
-    HPL.Print("feed reminder " .. (s.feedReminder and ("on, when your pet is " .. s.feedWhen .. " or worse") or "off") .. ".")
-    HPL.UpdateHunterTools()
-    if HPL.RefreshUI then HPL.RefreshUI() end
-  elseif cmd == "swing" then
-    HPL.db.settings.swingTimer = not HPL.db.settings.swingTimer
-    HPL.Print("swing timer " .. (HPL.db.settings.swingTimer and "on" or "off") .. ".")
-    HPL.UpdateHunterTools()
-    if HPL.RefreshUI then HPL.RefreshUI() end
-  elseif cmd == "arcane" then
-    HPL.db.settings.arcaneReady = not HPL.db.settings.arcaneReady
-    HPL.Print("Arcane Shot icon " .. (HPL.db.settings.arcaneReady and "on" or "off") .. ".")
-    HPL.UpdateHunterTools()
-    if HPL.RefreshUI then HPL.RefreshUI() end
+  elseif cmd == "range" or cmd == "feed" or cmd == "swing" or cmd == "arcane" or cmd == "ammo" or cmd == "move" then
+    HPL.ToolsMoved(true)
   elseif cmd == "training" or cmd == "train" then
     HPL.ToggleTraining()
   elseif cmd == "trainer" then
@@ -278,9 +244,6 @@ local function SlashHandler(msg)
     HPL.Print("training reminders " .. (HPL.db.settings.trainerReminder and "on" or "off") .. ".")
   elseif cmd == "export" then
     HPL.ShowExport()
-  elseif cmd == "ammo" then
-    HPL.db.settings.ammoWarn = not HPL.db.settings.ammoWarn
-    HPL.Print("low ammo warnings " .. (HPL.db.settings.ammoWarn and "on" or "off") .. ".")
   elseif cmd == "tooltip" then
     HPL.db.settings.tooltip = not HPL.db.settings.tooltip
     HPL.Print("beast tooltips " .. (HPL.db.settings.tooltip and "on" or "off") .. ".")
@@ -288,8 +251,6 @@ local function SlashHandler(msg)
     HPL.Print("version " .. HPL.VERSION .. ".")
   elseif cmd == "help" then
     HPL.ShowHelp()
-  elseif cmd == "move" then
-    HPL.ToggleMoveIcons()
   elseif cmd == "scan" then
     HPL.ScanActivePet("scan")
     HPL.Print("checked your current pet.")
@@ -333,17 +294,9 @@ local function SlashHandler(msg)
     HPL.Print("/petlog minimap - show or hide the minimap button")
     HPL.Print("/petlog notify - turn new skin messages on or off")
     HPL.Print("/petlog tooltip - turn the \"new skin\" line on beast tooltips on or off")
-    HPL.Print("/petlog ammo - turn low ammo warnings on or off")
     HPL.Print("/petlog training - what your pet and you can learn")
     HPL.Print("/petlog trainer - turn training reminders on or off")
     HPL.Print("/petlog export - copy your collection as text")
-    HPL.Print("/petlog range - turn the range icon on or off")
-    HPL.Print("/petlog feed - turn the feed reminder on or off")
-    HPL.Print("/petlog feed content | unhappy - when the feed reminder shows")
-    HPL.Print("/petlog feed sound - turn the feed reminder sound on or off")
-    HPL.Print("/petlog swing - turn the Auto Shot and melee swing timer on or off")
-    HPL.Print("/petlog arcane - turn the Arcane Shot ready icon on or off")
-    HPL.Print("/petlog move - unlock the on-screen icons and bars so you can drag them")
     HPL.Print("/petlog scan - re-check your current pet")
     HPL.Print("/petlog unassign <pet name> - clear a pet's skin so you can pick it again")
     HPL.Print("/petlog forget <pet name> - remove a saved pet")
@@ -351,6 +304,34 @@ local function SlashHandler(msg)
     HPL.Print("/petlog reset - delete everything")
   end
 end
+
+-- 2.0 moved the range icon, feed reminder, swing timer, Arcane Shot icon and ammo warnings into Class
+-- Toolkit, a separate addon for every class. Hunters without it are told once, and any old command says
+-- where they went.
+local TOOLKIT_URL = "github.com/notforever-ship-it/ClassToolkit"
+
+function HPL.ToolsMoved(asked)
+  local has = IsAddOnLoaded("ClassToolkit")
+  if has then
+    if asked then HPL.Print("the hunter tools live in Class Toolkit now: type /ctk.") end
+  else
+    HPL.Print("the range icon, feed reminder, swing timer, Arcane Shot icon and ammo warnings moved to " ..
+      "Class Toolkit, a separate addon for every class. Get it from " .. TOOLKIT_URL .. " (RavenLaunch can " ..
+      "install it from that address).")
+  end
+end
+
+local notice = CreateFrame("Frame")
+notice:RegisterEvent("PLAYER_ENTERING_WORLD")
+notice:SetScript("OnEvent", function()
+  notice:UnregisterEvent("PLAYER_ENTERING_WORLD")
+  HPL.After(10, function()
+    if HPL.db and HPL.IsHunter() and not HPL.db.stats.toolsMovedNotice then
+      HPL.db.stats.toolsMovedNotice = true
+      HPL.ToolsMoved(false)
+    end
+  end)
+end)
 
 local loader = CreateFrame("Frame")
 loader:RegisterEvent("ADDON_LOADED")
@@ -369,8 +350,6 @@ loader:SetScript("OnEvent", function()
   HPL.InitMinimapButton()
   HPL.InitTooltip()
   HPL.InitTraining()
-  HPL.InitHunterTools()
-  HPL.InitCombat()
 
   SLASH_POKEHUNTLOG1 = "/petlog"
   SLASH_POKEHUNTLOG2 = "/phl"

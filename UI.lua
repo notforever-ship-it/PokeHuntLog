@@ -7,8 +7,7 @@ local ROW_HEIGHT, NUM_ROWS, ROW_WIDTH = 18, 20, 340
 local DETAIL_WIDTH = 276
 local MAX_WHERE_LINES = 6
 
-local frame, scroll, detail, emptyText, summaryText, uncaughtCheck, rangeCheck, feedCheck, lockButton, searchBox
-local swingCheck, arcaneCheck, toolsButton, toolsPanel
+local frame, scroll, detail, emptyText, summaryText, uncaughtCheck, searchBox
 local buttons = {}
 HPL.rows = {}
 HPL.selected = nil      -- { kind = "skin", id = skinId } or { kind = "pet", pet = petRecord, charKey = key }
@@ -594,10 +593,6 @@ function HPL.RefreshUI()
     " (" .. HPL.Percent(HPL.totals.caught, HPL.totals.skins) .. "%)" ..
     GOLD .. "     Tames: " .. END .. HPL.db.stats.tames)
   uncaughtCheck:SetChecked(HPL.db.settings.showUncaught)
-  rangeCheck:SetChecked(HPL.db.settings.rangeIcon)
-  feedCheck:SetChecked(HPL.db.settings.feedReminder)
-  swingCheck:SetChecked(HPL.db.settings.swingTimer)
-  arcaneCheck:SetChecked(HPL.db.settings.arcaneReady)
   HPL.BuildRows()
   HPL.UpdateDetail()
   HPL.UpdateList()
@@ -783,64 +778,10 @@ local function CreateWindow()
   credit:SetPoint("BOTTOM", frame, "BOTTOM", 0, 46)
   credit:SetText(GREY .. "Made by " .. END .. "|cffabd473stealthzi" .. END .. GREY .. "   v" .. HPL.VERSION .. END)
 
-  toolsButton = CreateFrame("Button", "PokeHuntLogToolsButton", frame, "UIPanelButtonTemplate")
-  toolsButton:SetWidth(110)
-  toolsButton:SetHeight(22)
-  toolsButton:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", 18, 18)
-  toolsButton:SetText("Hunter tools")
-  toolsButton:SetScript("OnClick", function()
-    if toolsPanel:IsShown() then toolsPanel:Hide() else toolsPanel:Show() end
-  end)
-  Explain(toolsButton, "Hunter tools", "Turn the range icon, feed reminder, swing timer and Arcane Shot icon " ..
-    "on or off, and unlock them to move.")
-
-  -- The on-screen helpers, and the lock that lets them be dragged.
-  toolsPanel = CreateFrame("Frame", "PokeHuntLogToolsPanel", frame)
-  toolsPanel:SetWidth(200)
-  toolsPanel:SetHeight(146)
-  toolsPanel:SetPoint("BOTTOMLEFT", toolsButton, "TOPLEFT", -4, 4)
-  Backdrop(toolsPanel, false)
-  toolsPanel:SetFrameLevel(frame:GetFrameLevel() + 10)
-  toolsPanel:EnableMouse(true)
-  toolsPanel:Hide()
-
-  local function ToolCheck(name, label, key, y, tipTitle, tipText)
-    local c = CreateFrame("CheckButton", name, toolsPanel, "UICheckButtonTemplate")
-    c:SetWidth(24)
-    c:SetHeight(24)
-    c:SetPoint("TOPLEFT", toolsPanel, "TOPLEFT", 10, y)
-    local text = getglobal(name .. "Text")
-    if text then text:SetText(label) end
-    Explain(c, tipTitle, tipText)
-    c:SetScript("OnClick", function()
-      HPL.db.settings[key] = this:GetChecked() and true or false
-      HPL.UpdateHunterTools()
-    end)
-    return c
-  end
-  rangeCheck = ToolCheck("PokeHuntLogRangeCheck", "Range icon", "rangeIcon", -8, "Range icon",
-    "Shows whether your target is in Auto Shot range, the dead zone, or melee range.")
-  feedCheck = ToolCheck("PokeHuntLogFeedCheck", "Feed reminder", "feedReminder", -32, "Feed reminder",
-    "Shows a happiness face when your pet stops being happy. Click it to feed.")
-  swingCheck = ToolCheck("PokeHuntLogSwingCheck", "Swing timer", "swingTimer", -56, "Swing timer",
-    "Bars counting down to your next Auto Shot and melee swing. The red end of the Auto Shot bar is the aim: " ..
-    "stand still then or the shot is delayed.")
-  arcaneCheck = ToolCheck("PokeHuntLogArcaneCheck", "Arcane Shot ready", "arcaneReady", -80, "Arcane Shot icon",
-    "Lights up when Arcane Shot is off cooldown, you have the mana, and your target is in range.")
-
-  lockButton = CreateFrame("Button", "PokeHuntLogLockButton", toolsPanel, "UIPanelButtonTemplate")
-  lockButton:SetWidth(170)
-  lockButton:SetHeight(22)
-  lockButton:SetPoint("BOTTOM", toolsPanel, "BOTTOM", 0, 12)
-  lockButton:SetText(HPL.movingIcons and "Lock icons" or "Unlock icons")
-  lockButton:SetScript("OnClick", function() HPL.ToggleMoveIcons() end)
-  Explain(lockButton, "Move the icons", "Unlock, drag the range icon, feed reminder, swing timer and " ..
-    "Arcane Shot icon where you want them, then lock again.")
-
   local collapseButton = CreateFrame("Button", "PokeHuntLogCollapseButton", frame, "UIPanelButtonTemplate")
   collapseButton:SetWidth(110)
   collapseButton:SetHeight(22)
-  collapseButton:SetPoint("LEFT", toolsButton, "RIGHT", 8, 0)
+  collapseButton:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", 18, 18)
   collapseButton:SetText("Collapse all")
   collapseButton:SetScript("OnClick", function() HPL.ToggleCollapseAll() end)
 
@@ -1055,12 +996,6 @@ function HPL.ToggleCollapseAll()
   end
   if anyOpen then collapsed["unknown"] = nil end
   HPL.RefreshUI()
-end
-
-function HPL.UpdateLogLockButton()
-  if lockButton then
-    lockButton:SetText(HPL.movingIcons and "Lock icons" or "Unlock icons")
-  end
 end
 
 function HPL.ToggleWindow()

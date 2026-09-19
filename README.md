@@ -10,32 +10,25 @@ Each skin shows the highest level you've gotten a pet with that skin to, out of 
 
 Skins you haven't caught stay hidden. Tick **Show uncaught** to browse all 117 skins, with where to tame each one.
 
-It also adds two hunter helpers:
+It also has:
 
-- **Range icon.** Shows while you target something you can attack, and tells you whether you can shoot it:
-  - green **In range**
-  - red **Dead zone** (too close to shoot, too far to melee)
-  - orange **Melee**
-  - grey **Out of range**
 - **New skin tooltips.** Hover a wild beast and its tooltip says whether that skin is new to your log or already caught.
 - **Family roles.** Every family is labelled Tank, DPS, Balanced, or AoE tank for gorillas, with its health, armour and damage modifiers, abilities and diet on hover.
 - **Pet stats.** Attack power, damage, attack speed, health, armour and stats are recorded for each of your pets, along with the abilities it has learned.
 - **Search** by skin, creature or zone, and **export** your collection as text.
-- **Low ammo warnings** at 200 and 50 shots.
 - **Ability list** covering every pet ability: each rank's pet level and training point cost, which families can learn it, and the beasts that teach it.
-- **Training panel** showing your pet's unspent training points, what its family can learn, which ability ranks you have unlocked by taming, where to tame the next rank, and what your pet trainer has waiting.
-- **Feed reminder.** A happiness face pops up when your pet drops to Content (or only at Unhappy, if you prefer), with a chat message and a sound. Click it to cast Feed Pet, then click a food in your bags.
-- **Swing timer.** Bars counting down to your next Auto Shot and melee swing. The red end of the Auto Shot bar is the aim, when moving delays the shot.
-- **Arcane Shot icon** that lights up READY when Arcane Shot is off cooldown, you have the mana, and your target is in range.
+- **Training panel** showing your pet's unspent training points, what its family can learn, which ability ranks you have unlocked by taming, where to tame the next rank, and what your pet and hunter trainers have waiting.
+
+**Looking for the range icon, feed reminder, swing timer or Arcane Shot icon?** Since 2.0 they live in
+[Class Toolkit](https://github.com/notforever-ship-it/ClassToolkit), a separate addon with tools for every class. Install it next to PokeHuntLog.
 
 ## Quick start
 
 1. **Download** the zip from the [latest release](https://github.com/notforever-ship-it/PokeHuntLog/releases/latest). Copy the `PokeHuntLog` folder inside it into `Interface\AddOns\` in your game folder, then fully restart the game. [Full install steps](#install).
-2. **Put Auto Shot and Wing Clip on your action bars.** Any slot works, even a bar page you never show. Drag the real spells from your spellbook; macros don't count. Without them the range icon can't tell where you are. (You learn Wing Clip at level 12.)
-3. **Need instructions in game?** Press **Help** at the bottom of the log, or type `/petlog help`.
-4. **Open your log** with `/petlog` or the beast icon on the minimap.
-5. **Add the pets you already have** by calling each one and opening the stable at a stable master once. New tames are added automatically.
-6. **Move the icons:** press **Hunter tools** at the bottom left of the log, then **Unlock icons**. Drag the range icon, feed reminder, swing timer and Arcane Shot icon where you want them, then press **Lock icons**.
+2. **Need instructions in game?** Press **Help** at the bottom of the log, or type `/petlog help`.
+3. **Open your log** with `/petlog` or the beast icon on the minimap.
+4. **Add the pets you already have** by calling each one and opening the stable at a stable master once. New tames are added automatically.
+5. **Want the range icon, feed reminder or swing timer?** Install [Class Toolkit](https://github.com/notforever-ship-it/ClassToolkit) as well.
 
 Found a bug? See [Reporting bugs](#reporting-bugs).
 
@@ -71,14 +64,9 @@ The game doesn't tell addons which skin a pet has. The log works it out from the
 
 To remove a pet from the log, Shift-click **Forget pet**.
 
-### Hunter tools: range icon, feed reminder, swing timer, Arcane Shot
+### Hunter tools
 
-- Press **Hunter tools** at the bottom left of the log to turn each one on or off.
-- **Swing timer:** the top bar counts down to your next Auto Shot and turns red for the last half second, the aim; stand still then or the shot is delayed. The bottom bar is your melee swing and hides when you leave melee. With SuperWoW it reads swings straight from the game; without it, it watches your ammo and the combat log.
-- **Arcane Shot icon:** shows while you target an enemy. It greys out with a countdown on cooldown, turns blue without the mana, red out of range, and says READY when you can fire.
-- The range icon needs **Auto Shot** on one of your action bars to be accurate. Put **Wing Clip** on a bar too and it can tell melee range apart from the dead zone. Hidden bars count.
-- To move them, press **Unlock icons** in Hunter tools (or type `/petlog move`), drag them where you want, then press **Lock icons**. The feed reminder can also be Shift-dragged at any time.
-- If you target something and Auto Shot isn't on your bars, the addon tells you once in chat. It does the same for Wing Clip from level 12.
+The range icon, feed reminder, swing timer, Arcane Shot icon and ammo warnings moved to [Class Toolkit](https://github.com/notforever-ship-it/ClassToolkit) in 2.0. Your old `/petlog range`, `feed`, `swing`, `arcane`, `ammo` and `move` commands now point you there.
 
 ### Commands
 
@@ -91,17 +79,9 @@ To remove a pet from the log, Shift-click **Forget pet**.
 | `/petlog minimap` | Show or hide the minimap button |
 | `/petlog notify` | Turn "new skin" messages on or off |
 | `/petlog tooltip` | Turn the "new skin" line on beast tooltips on or off |
-| `/petlog ammo` | Turn low ammo warnings on or off |
 | `/petlog export` | Show your collection as text to copy |
 | `/petlog training` | Open the Training panel |
 | `/petlog trainer` | Turn training reminders on or off |
-| `/petlog range` | Turn the range icon on or off |
-| `/petlog feed` | Turn the feed reminder on or off |
-| `/petlog feed content` / `/petlog feed unhappy` | Remind when the pet is Content or worse (default), or only when Unhappy |
-| `/petlog feed sound` | Turn the reminder sound on or off |
-| `/petlog swing` | Turn the swing timer on or off |
-| `/petlog arcane` | Turn the Arcane Shot icon on or off |
-| `/petlog move` | Unlock or lock the on-screen icons and bars (same as the Unlock icons button) |
 | `/petlog scan` | Re-check your current pet |
 | `/petlog unassign <pet name>` | Clear a pet's skin so you can pick it again |
 | `/petlog forget <pet name>` | Remove a saved pet |
@@ -133,31 +113,31 @@ So far the addon has been confirmed to load on Ravencraft, and the log window wo
 11. [ ] Renaming your pet keeps it under the same skin, with no duplicate entry.
 12. [ ] Logging in on another hunter shows the same collection, and new pets are tagged with that hunter.
 13. [ ] **SuperWoW only:** `/petlog debug` with a beast targeted shows an npc id, and the id matches the creature on Wowhead Classic. If it doesn't, send the output: the GUID parsing may need a one-line fix.
-14. [ ] Nothing odd happens when a non-hunter logs in, and the range icon and feed reminder never show for them.
-15. [ ] With Auto Shot on a bar, targeting a mob shows the range icon. It reads green In range at shooting distance, red Dead zone just outside melee, orange Melee when touching it (needs Wing Clip on a bar), and grey Out of range when far away.
-16. [ ] The range icon hides when you clear your target or the target dies.
-17. [ ] When your pet drops from Happy to Content, the happiness face appears with a chat message and sound. Clicking it starts Feed Pet, and the icon hides while the pet eats and once it's Happy again.
-18. [ ] **Unlock icons** lets you drag both icons, and the button then says Lock icons. They stay where you put them after `/reload`.
-19. [ ] The How to use window opens with Help, `/petlog help` or Shift-clicking the minimap icon, and never pops up by itself. All the text fits in the window.
-20. [ ] With Auto Shot removed from your bars, targeting an enemy prints a one-time hint to put it on a bar.
-21. [ ] Taming a beast logs it under the right skin, with Tames going up by 1, even though the new pet is named after its family. Its details show the beast it was tamed from.
-22. [ ] Hovering a wild beast shows a PokeHuntLog line saying NEW skin, caught, or not in the list.
-23. [ ] Collapse all folds the list, and pressing it again opens it.
-24. [ ] A non-hunter character has no minimap button.
-25. [ ] Families show a role (Bear Tank, Cat DPS, Gorilla AoE tank), and hovering one shows modifiers, abilities and diet.
-26. [ ] Calling a pet records its stats: its details show attack power, damage, speed, health and armour a few seconds later, plus what it knows.
-27. [ ] Where to tame marks rares, fast beasts and "tameable now" for creatures at or below your level.
-28. [ ] The overview shows the skins still to catch in your current zone.
-29. [ ] Typing in Search filters the list; clearing it restores everything.
-30. [ ] Export shows your collection as text, and Ctrl+C copies it.
-31. [ ] Hovering the feed face gives advice, and low ammo warns once at 200 and once at 50 shots.
-32. [ ] The Training panel shows your pet's training points, what it knows, and what its family can learn.
-33. [ ] After taming a beast, the panel counts the ability rank it knew as unlocked, and points at a beast for the next rank.
-34. [ ] Opening a pet trainer and a hunter trainer once fills their sections of the Training panel, and levelling up reminds you when something is ready. Profession trainers are ignored.
-35. [ ] The Training panel's All abilities button lists all 21 abilities with their ranks, and the list scrolls to the end without being cut off.
-36. [ ] Taming a beast that teaches two abilities marks both as unlocked.
+14. [ ] Nothing odd happens when a non-hunter logs in.
+15. [ ] The How to use window opens with Help, `/petlog help` or Shift-clicking the minimap icon, and never pops up by itself. All the text fits in the window.
+16. [ ] Taming a beast logs it under the right skin, with Tames going up by 1, even though the new pet is named after its family. Its details show the beast it was tamed from.
+17. [ ] Hovering a wild beast shows a PokeHuntLog line saying NEW skin, caught, or not in the list.
+18. [ ] Collapse all folds the list, and pressing it again opens it.
+19. [ ] A non-hunter character has no minimap button.
+20. [ ] Families show a role (Bear Tank, Cat DPS, Gorilla AoE tank), and hovering one shows modifiers, abilities and diet.
+21. [ ] Calling a pet records its stats: its details show attack power, damage, speed, health and armour a few seconds later, plus what it knows.
+22. [ ] Where to tame marks rares, fast beasts and "tameable now" for creatures at or below your level.
+23. [ ] The overview shows the skins still to catch in your current zone.
+24. [ ] Typing in Search filters the list; clearing it restores everything.
+25. [ ] Export shows your collection as text, and Ctrl+C copies it.
+26. [ ] The Training panel shows your pet's training points, what it knows, and what its family can learn.
+27. [ ] After taming a beast, the panel counts the ability rank it knew as unlocked, and points at a beast for the next rank.
+28. [ ] Opening a pet trainer and a hunter trainer once fills their sections of the Training panel, and levelling up reminds you when something is ready. Profession trainers are ignored.
+29. [ ] The Training panel's All abilities button lists all 21 abilities with their ranks, and the list scrolls to the end without being cut off.
+30. [ ] Taming a beast that teaches two abilities marks both as unlocked.
 
 ## Changelog
+
+### 2.0.0
+
+- **PokeHuntLog is the pet log again.** The range icon, feed reminder, swing timer, Arcane Shot icon and ammo warnings moved to [Class Toolkit](https://github.com/notforever-ship-it/ClassToolkit), a new addon with tools for every class, so a Paladin can have the swing timer too. Install both to keep everything.
+- The old commands for them (`/petlog range`, `feed`, `swing`, `arcane`, `ammo`, `move`) say where they went, and hunters without Class Toolkit are told once when they log in.
+- The Hunter tools button is gone from the log window.
 
 ### 1.8.2
 
