@@ -363,6 +363,7 @@ function main() {
     const p = path.join(d, e.name);
     if (e.isDirectory()) {
       if (e.name === "tools" || e.name === ".git" || e.name === ".planning") return;
+      if (fs.readdirSync(p).some((f) => f.endsWith(".toc"))) return; // another addon with its own repo
       walk(p);
     } else if (e.name.endsWith(".lua")) files.push(p);
   });
